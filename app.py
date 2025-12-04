@@ -2,32 +2,74 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
+from streamlit_option_menu import option_menu
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Air Aware", layout="wide")
 
-# ---------------- TOP BAR: TITLE + TOGGLE ----------------
-top_col1, top_col2 = st.columns([5, 1])
+# ---------------- TOP BAR: TITLE (LEFT) + THEME PILL TOGGLE (RIGHT) ----------------
+top_col1, top_col2 = st.columns([5, 2])
+
+# --- Maintain theme in session state ---
+if "theme" not in st.session_state:
+    st.session_state.theme = "Dark"  # default
 
 with top_col2:
-    # Wrap the toggle in a small container we can style safely
-    st.markdown('<div class="theme-toggle-container">', unsafe_allow_html=True)
-    dark_mode = st.toggle("Dark mode", value=True, key="theme_toggle")
+    # Wrap option_menu in a right-aligned container
+    st.markdown(
+        "<div style='display:flex; justify-content:flex-end;'>",
+        unsafe_allow_html=True,
+    )
+
+    selected_theme = option_menu(
+        menu_title=None,
+        options=["Light", "Dark"],
+        icons=["sun", "moon"],         # optional icons
+        orientation="horizontal",
+        default_index=1 if st.session_state.theme == "Dark" else 0,
+        key="theme_option",
+        styles={
+            "container": {
+                "padding": "0px",
+                "background-color": "rgba(0,0,0,0)",
+                "border-radius": "999px",
+            },
+            "nav-link": {
+                "font-size": "0.8rem",
+                "padding": "4px 14px",
+                "margin": "0 2px",
+                "border-radius": "999px",
+                "color": "#6b7280",
+                "background-color": "rgba(148,163,184,0.15)",
+            },
+            "nav-link-selected": {
+                "background-color": "#6366f1",
+                "color": "white",
+                "border-radius": "999px",
+            },
+            "icon": {
+                "font-size": "0.9rem",
+            },
+        },
+    )
+
     st.markdown("</div>", unsafe_allow_html=True)
+
+# Update session theme from selection
+st.session_state.theme = selected_theme
+dark_mode = st.session_state.theme == "Dark"
 
 # ---------------- THEME SETTINGS ----------------
 if dark_mode:
     bg_color = "#0e1117"
     text_color = "#FFFFFF"
     plotly_template = "plotly_dark"
-    toggle_container_bg = "rgba(255, 255, 255, 0.10)"
 else:
     bg_color = "#FFFFFF"
     text_color = "#000000"
     plotly_template = "plotly_white"
-    toggle_container_bg = "rgba(0, 0, 0, 0.08)"
 
-# ---------------- GLOBAL THEME + FONT + TOGGLE CONTAINER CSS ----------------
+# ---------------- GLOBAL THEME + FONT ----------------
 st.markdown(
     f"""
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -46,36 +88,7 @@ st.markdown(
             color: {text_color} !important;
         }}
 
-        /* ---- Pretty container around the built-in toggle ---- */
-        .theme-toggle-container {{
-            position: fixed;
-            top: 16px;
-            right: 24px;
-            z-index: 1000;
-            padding: 6px 12px;
-            border-radius: 999px;
-            background: {toggle_container_bg};
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }}
-
-        .theme-toggle-container [data-testid="stToggle"] {{
-            margin: 0;
-        }}
-
-        .theme-toggle-container label {{
-            font-size: 0.9rem;
-            font-weight: 500;
-        }}
-
-        /* Optional: slightly shrink the label text "Dark mode" */
-        .theme-toggle-container label > div:first-child {{
-            font-size: 0.85rem;
-        }}
-
-        /* Ensure widget labels keep consistent font & color */
+        /* Ensure widget labels & inputs get the same font/color */
         .stTextInput input,
         .stSelectbox div,
         .stMultiSelect div,
@@ -89,7 +102,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ---------------- TITLE (CENTERED) ----------------
+# ---------------- TITLE (CENTERED IN LEFT COL) ----------------
 with top_col1:
     st.markdown(
         "<h1 style='text-align:center; margin-top:10px;'>Air Aware</h1>",
