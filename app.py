@@ -92,14 +92,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {{
     color: {text_color} !important;
 }}
 
-/* NAV BAR AS FIRST ROW */
-div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background-color: {bg_color};
+/* Top Bar Color Fixed to Pink */
+div[data-testid="stHorizontalBlock"]:first-of-type {
+    background-color: #ff99ff !important;
     padding: 18px 24px;
     border-radius: 12px;
     border: 2px solid {text_color};
     margin-bottom: 28px;
-}}
+}
+
 
 .header-title {{
     font-size: 26px;
