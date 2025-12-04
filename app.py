@@ -7,16 +7,20 @@ from streamlit_option_menu import option_menu
 st.set_page_config(page_title="Air Aware", layout="wide")
 #FONT
 st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
+<style>
 
-    * {
-        font-family: 'Audiowide', sans-serif !important;
-        letter-spacing: 1px;
-    }
-    </style>
+@import url('https://fonts.googleapis.com/css2?family=Acme&display=swap');
+
+* {
+    font-family: 'Acme', sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600 !important;
+}
+
+</style>
 """, unsafe_allow_html=True)
-
 #THEME MEMORY
 if "theme" not in st.session_state:
     st.session_state.theme = "Dark" 
