@@ -6,34 +6,9 @@ import os
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Air Aware", layout="wide")
 
-# ---------------- BASE CSS FOR TOGGLE POSITION ----------------
-base_toggle_css = """
-<style>
-/* Fixed container in the top-right corner */
-.theme-toggle-container {
-    position: fixed;
-    top: 16px;
-    right: 24px;
-    z-index: 1000;
-}
-
-/* Remove text label from toggle */
-.theme-toggle-container [data-testid="stToggle"] label span {
-    display: none !important;
-}
-
-/* Remove extra padding around label */
-.theme-toggle-container [data-testid="stToggle"] > label {
-    padding: 0 !important;
-}
-</style>
-"""
-st.markdown(base_toggle_css, unsafe_allow_html=True)
-
-# ---------------- RENDER TOGGLE (NO LABEL) ----------------
-st.markdown('<div class="theme-toggle-container">', unsafe_allow_html=True)
-dark_mode = st.toggle(label="", value=True, key="theme_toggle")
-st.markdown('</div>', unsafe_allow_html=True)
+# ---------------- THEME TOGGLE (SINGLE, WITH KEY) ----------------
+# We keep a label ("Dark mode") so we can target it in CSS, then hide the text visually.
+dark_mode = st.toggle("Dark mode", value=True, key="theme_toggle")
 
 # ---------------- THEME COLORS ----------------
 if dark_mode:
@@ -42,52 +17,63 @@ if dark_mode:
     plotly_template = "plotly_dark"
     border_color = "#FFFFFF"
     thumb_bg = "#FFFFFF"
-    thumb_border = "#FFFFFF"
 else:
     bg_color = "#FFFFFF"
     text_color = "#000000"
     plotly_template = "plotly_white"
     border_color = "#000000"
     thumb_bg = "#000000"
-    thumb_border = "#000000"
 
-# ---------------- HIGH-VISIBILITY TOGGLE STYLE ----------------
-toggle_theme_css = f"""
+# ---------------- TOGGLE STYLING (ALWAYS VISIBLE, TOP-RIGHT) ----------------
+toggle_css = f"""
 <style>
-.theme-toggle-container {{
-    padding: 6px 10px;
-    background: {"#FFFFFF" if dark_mode else "#000000"};
-    border-radius: 999px;
-    border: 2px solid {border_color};
+/* Select our toggle by its aria-label (the label text) */
+div[data-testid="stToggle"][aria-label="Dark mode"] {{
+    position: fixed;
+    top: 16px;
+    right: 24px;
+    z-index: 1000;
+}}
+
+/* Hide the textual label next to the toggle */
+div[data-testid="stToggle"][aria-label="Dark mode"] label > div:first-child {{
+    display: none !important;
+}}
+
+/* Make the toggle bigger and pill-shaped */
+div[data-testid="stToggle"][aria-label="Dark mode"] > label {{
+    padding: 0 !important;
+    width: 50px !important;
+    height: 26px !important;
 }}
 
 /* Track */
-.theme-toggle-container [data-testid="stToggle"] input + div {{
-    width: 46px !important;
-    height: 22px !important;
+div[data-testid="stToggle"][aria-label="Dark mode"] input + div {{
+    width: 50px !important;
+    height: 26px !important;
     border-radius: 999px !important;
     border: 2px solid {border_color} !important;
     background: transparent !important;
 }}
 
 /* Thumb */
-.theme-toggle-container [data-testid="stToggle"] input + div::before {{
-    width: 18px !important;
-    height: 18px !important;
-    top: 1px !important;
-    left: 1px !important;
+div[data-testid="stToggle"][aria-label="Dark mode"] input + div::before {{
+    width: 20px !important;
+    height: 20px !important;
+    top: 2px !important;
+    left: 2px !important;
     border-radius: 50% !important;
     background: {thumb_bg} !important;
-    border: 2px solid {thumb_border} !important;
+    border: 2px solid {border_color} !important;
 }}
 
-/* Thumb when checked (slide right) */
-.theme-toggle-container [data-testid="stToggle"] input:checked + div::before {{
-    transform: translateX(20px) !important;
+/* Thumb position when checked */
+div[data-testid="stToggle"][aria-label="Dark mode"] input:checked + div::before {{
+    transform: translateX(22px) !important;
 }}
 </style>
 """
-st.markdown(toggle_theme_css, unsafe_allow_html=True)
+st.markdown(toggle_css, unsafe_allow_html=True)
 
 # ---------------- APPLY PAGE THEME ----------------
 st.markdown(
@@ -124,11 +110,11 @@ DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
 def load_data(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
 
-    # Parse timestamp
+    # parse timestamp
     if "Timestamp" in df.columns:
         df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
 
-    # Standardise PM2.5 name
+    # standardise PM2.5 column name
     for c in df.columns:
         if "pm2" in c.lower():
             df.rename(columns={c: "PM2.5"}, inplace=True)
@@ -207,205 +193,5 @@ fig3 = px.pie(
     color_discrete_map=color_map,
     hole=0.25,
 )
-fig3.update_traces(textinfo="percent+label")
-st.plotly_chart(style_fig(fig3), use_container_width=True)
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import os
-
-# ---------------- PAGE CONFIG ----------------
-st.set_page_config(page_title="Air Aware", layout="wide")
-
-# ---------------- THEME TOGGLE (TOP RIGHT, STYLED) ----------------
-# ---------------- FIXED: HIGH-VISIBILITY TOGGLE STYLE ----------------
-toggle_css = f"""
-<style>
-.theme-toggle-container {{
-    position: fixed;
-    top: 18px;
-    right: 25px;
-    z-index: 9999;
-    padding: 6px 10px;
-    background: {"#FFFFFF" if dark_mode else "#000000"};
-    border-radius: 30px;
-    border: 2px solid {"#FFFFFF" if dark_mode else "#000000"};
-}}
-
-.theme-toggle-container label span {{
-    display: none !important;
-}}
-
-.theme-toggle-container [data-testid="stToggle"] > label {{
-    width: 50px !important;
-    height: 26px !important;
-    padding: 0 !important;
-}}
-
-.theme-toggle-container [data-testid="stToggle"] input + div {{
-    width: 50px !important;
-    height: 26px !important;
-    border-radius: 20px !important;
-    border: 2px solid {"#FFFFFF" if dark_mode else "#000000"};
-    background: transparent !important;
-}}
-
-.theme-toggle-container [data-testid="stToggle"] input + div::before {{
-    width: 20px !important;
-    height: 20px !important;
-    top: 2px !important;
-    left: 2px !important;
-    border-radius: 50% !important;
-    background: {"#FFFFFF" if not dark_mode else "#000000"} !important;
-    border: 2px solid {"#000000" if not dark_mode else "#FFFFFF"} !important;
-}}
-
-.theme-toggle-container [data-testid="stToggle"] input:checked + div::before {{
-    transform: translateX(22px) !important;
-}}
-</style>
-"""
-
-st.markdown(toggle_css, unsafe_allow_html=True)
-
-st.markdown('<div class="theme-toggle-container">', unsafe_allow_html=True)
-dark_mode = st.toggle("", value=True)
-st.markdown("</div>", unsafe_allow_html=True)
-
-# Inject CSS placeholder that we will replace dynamically
-st.markdown(toggle_css.replace("VAR_BORDER_COLOR", "#000000")
-                        .replace("VAR_THUMB_BG", "#000000")
-                        .replace("VAR_THUMB_BORDER", "#000000"),
-            unsafe_allow_html=True)
-
-# Render toggle container
-st.markdown('<div class="theme-toggle-container">', unsafe_allow_html=True)
-dark_mode = st.toggle(label="", value=True)
-st.markdown("</div>", unsafe_allow_html=True)
-
-# ---------------- APPLY THEME COLORS ----------------
-if dark_mode:
-    bg_color = "#0e1117"
-    text_color = "#FFFFFF"
-    border_color = "#FFFFFF"
-    thumb_bg = "#FFFFFF"
-else:
-    bg_color = "#FFFFFF"
-    text_color = "#000000"
-    border_color = "#000000"
-    thumb_bg = "#000000"
-
-# Update CSS live based on toggle state
-st.markdown(
-    f"""
-    <style>
-    .theme-toggle-container [data-testid="stToggle"] input + div {{
-        border-color: {border_color} !important;
-    }}
-    .theme-toggle-container [data-testid="stToggle"] input + div::before {{
-        background-color: {thumb_bg} !important;
-        border-color: {border_color} !important;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-plotly_template = "plotly_dark" if dark_mode else "plotly_white"
-
-# Background + Text Theme
-st.markdown(
-    f"""
-    <style>
-        .stApp {{
-            background-color: {bg_color} !important;
-            color: {text_color} !important;
-        }}
-        h1, h2, h3, h4, h5, h6, p, span, div {{
-            color: {text_color} !important;
-        }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# ---------------- TITLE ----------------
-st.markdown(
-    "<h1 style='text-align:center; margin-top:20px;'>Air Aware</h1>",
-    unsafe_allow_html=True,
-)
-
-st.markdown(
-    "<p style='text-align:center; font-size:18px; margin-top:-10px;'>A simple dashboard tracking PM2.5 levels and air quality status.</p>",
-    unsafe_allow_html=True,
-)
-
-# ---------------- LOAD DATA ----------------
-DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
-
-@st.cache_data
-def load_data(path):
-    df = pd.read_csv(path)
-    if "Timestamp" in df.columns:
-        df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
-    for c in df.columns:
-        if "pm2" in c.lower():
-            df.rename(columns={c: "PM2.5"}, inplace=True)
-            break
-    df["PM2.5"] = pd.to_numeric(df["PM2.5"], errors="coerce")
-    return df
-
-if not os.path.exists(DATA_PATH):
-    st.error(f"❌ Missing required file: {DATA_PATH}")
-    st.stop()
-
-df = load_data(DATA_PATH)
-
-# ---------------- RECORD COUNT ----------------
-st.markdown(f"<p style='font-size:18px; text-align:center;'><b>Total Records:</b> {len(df):,}</p>", unsafe_allow_html=True)
-
-# ---------------- CHART HELPER ----------------
-def style_fig(fig):
-    fig.update_layout(
-        template=plotly_template,
-        paper_bgcolor=bg_color,
-        plot_bgcolor=bg_color,
-        font=dict(color=text_color),
-        legend=dict(font=dict(color=text_color)),
-    )
-    fig.update_xaxes(title_font_color=text_color, tickfont_color=text_color)
-    fig.update_yaxes(title_font_color=text_color, tickfont_color=text_color)
-    return fig
-
-# ---------------- CHARTS ----------------
-col1, col2 = st.columns((2, 1))
-
-with col1:
-    st.subheader("PM2.5 Trend")
-    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City")
-    st.plotly_chart(style_fig(fig1), use_container_width=True)
-
-with col2:
-    st.subheader("PM2.5 Histogram")
-    fig2 = px.histogram(df, x="PM2.5", nbins=30)
-    st.plotly_chart(style_fig(fig2), use_container_width=True)
-
-# ---------------- PIE CHART ----------------
-def categorize(x):
-    if pd.isna(x):
-        return None
-    if x <= 30:
-        return "Good"
-    elif x <= 60:
-        return "Moderate"
-    return "Poor"
-
-df["Category"] = df["PM2.5"].apply(categorize)
-cat_counts = df["Category"].value_counts().reset_index()
-cat_counts.columns = ["Category", "Count"]
-
-st.subheader("Air Quality Category (PM2.5)")
-fig3 = px.pie(cat_counts, names="Category", values="Count",
-               color="Category", hole=0.25)
 fig3.update_traces(textinfo="percent+label")
 st.plotly_chart(style_fig(fig3), use_container_width=True)
