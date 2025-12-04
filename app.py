@@ -21,7 +21,7 @@ with header_left:
     st.markdown("<div class='header-title'>Air Aware</div>", unsafe_allow_html=True)
 
 with header_right:
-    # Pill colors depend on current theme (is_dark_now)
+    # Neutral pill colors that invert with theme
     unselected_bg = "#000000" if is_dark_now else "#FFFFFF"
     unselected_border = "#FFFFFF" if is_dark_now else "#000000"
     unselected_text = "#FFFFFF" if is_dark_now else "#000000"
@@ -66,12 +66,12 @@ dark_mode = st.session_state.theme == "Dark"
 
 # ---------------- THEME RULES ----------------
 if dark_mode:
-    bg_color = "#000000"          # everything black
-    text_color = "#FFFFFF"        # text white
+    bg_color = "#000000"          # page background
+    text_color = "#FFFFFF"        # text
     plotly_template = "plotly_dark"
 else:
-    bg_color = "#FFFFFF"          # everything white
-    text_color = "#000000"        # text black
+    bg_color = "#FFFFFF"
+    text_color = "#000000"
     plotly_template = "plotly_white"
 
 # ---------------- GLOBAL UI CSS ----------------
@@ -92,9 +92,9 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {{
     color: {text_color} !important;
 }}
 
-/* Top Bar Color Fixed to Pink */
+/* Top extended bar: DARK PINK, only this block */
 div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background-color: #cc0066 !important;
+    background-color: #d10075 !important;  /* dark pink bar */
     padding: 18px 24px;
     border-radius: 12px;
     border: 2px solid {text_color};
@@ -107,8 +107,7 @@ div[data-testid="stHorizontalBlock"]:first-of-type {{
     margin-top: 4px;
 }}
 
-/* Let inline styles from option_menu control colors.
-   We only force shape & spacing here. */
+/* Let option_menu inline styles control pill colors; we only shape them */
 ul {{
     list-style: none;
     padding-left: 0;
@@ -120,6 +119,12 @@ ul {{
 
 </style>
 """,
+    unsafe_allow_html=True,
+)
+
+# ---------------- SUBTITLE ----------------
+st.markdown(
+    "<p style='font-size:18px; text-align:center;'>PM2.5 Air Quality Dashboard</p>",
     unsafe_allow_html=True,
 )
 
@@ -148,6 +153,12 @@ if not os.path.exists(DATA_PATH):
 
 df = load_data(DATA_PATH)
 
+# ---------------- RECORD COUNT ----------------
+st.markdown(
+    f"<p style='text-align:center; font-size:18px;'><b>Total Records:</b> {len(df):,}</p>",
+    unsafe_allow_html=True,
+)
+
 # ---------------- PLOT STYLE FUNCTION ----------------
 def style_fig(fig):
     fig.update_layout(
@@ -156,25 +167,36 @@ def style_fig(fig):
         plot_bgcolor=bg_color,
         font=dict(color=text_color),
     )
-    fig.update_xaxes(color=text_color)
-    fig.update_yaxes(color=text_color)
+    # axis "range text" color follows theme
+    fig.update_xaxes(color=text_color, title_font_color=text_color, tickfont_color=text_color)
+    fig.update_yaxes(color=text_color, title_font_color=text_color, tickfont_color=text_color)
     return fig
 
-# ---------------- VISUALS ----------------
-col1, col2 = st.columns((2, 1))
+# ---------------- VISUALS (FULL WIDTH, ORDERED) ----------------
 
-with col1:
-    st.subheader("PM2.5 Trend")
-    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City",
-                   labels={"PM2.5": "PM2.5 (µg/m³)"})
-    st.plotly_chart(style_fig(fig1), use_container_width=True)
+# 1) PM2.5 Trend (enlarged, first)
+st.subheader("PM2.5 Trend")
+fig1 = px.line(
+    df,
+    x="Timestamp",
+    y="PM2.5",
+    color="City",
+    labels={"PM2.5": "PM2.5 (µg/m³)"}
+)
+st.plotly_chart(style_fig(fig1), use_container_width=True)
 
-with col2:
-    st.subheader("PM2.5 Distribution")
-    fig2 = px.histogram(df, x="PM2.5", color="City", nbins=30)
-    st.plotly_chart(style_fig(fig2), use_container_width=True)
+# 2) PM2.5 Distribution (second)
+st.subheader("PM2.5 Distribution")
+fig2 = px.histogram(
+    df,
+    x="PM2.5",
+    color="City",
+    nbins=30,
+    labels={"PM2.5": "PM2.5 (µg/m³)"}
+)
+st.plotly_chart(style_fig(fig2), use_container_width=True)
 
-# ---------------- PIE CHART ----------------
+# 3) Air Quality Classification (third)
 def categorize(x):
     if pd.isna(x):
         return None
@@ -189,6 +211,11 @@ cat_counts = df["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
 
 st.subheader("Air Quality Classification")
-fig3 = px.pie(cat_counts, names="Category", values="Count", hole=0.25)
+fig3 = px.pie(
+    cat_counts,
+    names="Category",
+    values="Count",
+    hole=0.25
+)
 fig3.update_traces(textinfo="percent+label")
 st.plotly_chart(style_fig(fig3), use_container_width=True)
