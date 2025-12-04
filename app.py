@@ -235,9 +235,9 @@ cat_counts.columns = ["Category", "Count"]
 
 # Pastel color palette
 pastel_colors = {
-    "Good":     "#A3E4D7",  # mint 
-    "Moderate": "#FAD7A0",  # peach
-    "Poor":     "#F5B7B1",  # light rose
+    "Good":     "#0080FF",  # DARK BLUE 
+    "Moderate": "#99CCFF",  # LIGHT BLUE
+    "Poor":     "#FF3C3C",  # RED
 }
 
 st.subheader("Air Quality Classification")
