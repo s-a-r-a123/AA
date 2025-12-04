@@ -4,24 +4,34 @@ import plotly.express as px
 import os
 from streamlit_option_menu import option_menu
 
-# ---------------- PAGE CONFIG ---------------
 st.set_page_config(page_title="Air Aware", layout="wide")
+#FONT
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
 
-# ---------------- THEME MEMORY ----------------
+    * {
+        font-family: 'Audiowide', sans-serif !important;
+        letter-spacing: 1px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+#THEME MEMORY
 if "theme" not in st.session_state:
-    st.session_state.theme = "Dark"  # default mode
+    st.session_state.theme = "Dark" 
 
-# Theme value BEFORE user clicks toggle (from previous run)
+# Theme BEFORE
 is_dark_now = st.session_state.theme == "Dark"
 
-# ---------------- TOP BAR: TITLE + TOGGLE ----------------
+#TOP BAR
 header_left, header_right = st.columns([5, 2])
 
 with header_left:
     st.markdown("<div class='header-title'>Air Aware</div>", unsafe_allow_html=True)
 
 with header_right:
-    # Neutral pill colors that invert with theme
+    
     unselected_bg = "#000000" if is_dark_now else "#FFFFFF"
     unselected_border = "#FFFFFF" if is_dark_now else "#000000"
     unselected_text = "#FFFFFF" if is_dark_now else "#000000"
@@ -64,17 +74,17 @@ with header_right:
 st.session_state.theme = selected_theme
 dark_mode = st.session_state.theme == "Dark"
 
-# ---------------- THEME RULES ----------------
+#THEME
 if dark_mode:
-    bg_color = "#000000"          # page background
-    text_color = "#FFFFFF"        # text
+    bg_color = "#000000"          
+    text_color = "#FFFFFF"        
     plotly_template = "plotly_dark"
 else:
     bg_color = "#FFFFFF"
     text_color = "#000000"
     plotly_template = "plotly_white"
 
-# ---------------- GLOBAL UI CSS ----------------
+#CSS
 st.markdown(
     f"""
 <style>
@@ -92,9 +102,9 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {{
     color: {text_color} !important;
 }}
 
-/* Top extended bar: DARK PINK, only this block */
+/* Top bar*/
 div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background-color: #FF3C3C !important;  /* dark pink bar */
+    background-color: #FF3C3C !important;  
     padding: 18px 24px;
     border-radius: 12px;
     border: 2px solid {text_color};
@@ -122,7 +132,7 @@ ul {{
     unsafe_allow_html=True,
 )
 
-# ---------------- LOAD DATA ----------------
+#LOAD DATA
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
 
 @st.cache_data
@@ -147,7 +157,7 @@ if not os.path.exists(DATA_PATH):
 
 df = load_data(DATA_PATH)
 
-# ---------------- PLOT STYLE FUNCTION ----------------
+#PLOT STYLE
 def style_fig(fig):
     fig.update_layout(
         template=plotly_template,
@@ -155,14 +165,14 @@ def style_fig(fig):
         plot_bgcolor=bg_color,
         font=dict(color=text_color),
     )
-    # axis "range text" color follows theme
+    
     fig.update_xaxes(color=text_color, title_font_color=text_color, tickfont_color=text_color)
     fig.update_yaxes(color=text_color, title_font_color=text_color, tickfont_color=text_color)
     return fig
 
-# ---------------- VISUALS (FULL WIDTH, ORDERED) ----------------
+#VISUALS
 
-# 1) PM2.5 Trend (enlarged, first)
+#PM2.5 Trend
 st.subheader("PM2.5 Trend")
 fig1 = px.line(
     df,
@@ -173,7 +183,7 @@ fig1 = px.line(
 )
 st.plotly_chart(style_fig(fig1), use_container_width=True)
 
-# 2) PM2.5 Distribution (second)
+#PM2.5 Distribution
 st.subheader("PM2.5 Distribution")
 fig2 = px.histogram(
     df,
@@ -184,7 +194,7 @@ fig2 = px.histogram(
 )
 st.plotly_chart(style_fig(fig2), use_container_width=True)
 
-# 3) Air Quality Classification (third)
+#Air Quality Classification
 def categorize(x):
     if pd.isna(x):
         return None
@@ -198,10 +208,10 @@ df["Category"] = df["PM2.5"].apply(categorize)
 cat_counts = df["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
 
-# 🌈 Pastel color palette
+# Pastel color palette
 pastel_colors = {
-    "Good":     "#A3E4D7",  # mint pastel
-    "Moderate": "#FAD7A0",  # soft peach
+    "Good":     "#A3E4D7",  # mint 
+    "Moderate": "#FAD7A0",  # peach
     "Poor":     "#F5B7B1",  # light rose
 }
 
@@ -216,18 +226,18 @@ fig3 = px.pie(
     color_discrete_map=pastel_colors
 )
 
-# Text + slight "lift" effect so it feels more alive
+# Text + slight lift
 fig3.update_traces(
     textinfo="label+percent",
     textfont_size=16,
-    pull=[0.03] * cat_counts.shape[0]   # small pull-out for all slices
+    pull=[0.03] * cat_counts.shape[0]  
 )
 
-# 🌀 Smooth transition animation when data/theme updates
+#transition
 fig3.update_layout(
     transition=dict(
-        duration=600,          # ms
-        easing="cubic-in-out"  # smooth easing curve
+        duration=600,          
+        easing="cubic-in-out"  
     )
 )
 
