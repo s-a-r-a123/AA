@@ -11,7 +11,7 @@ if os.path.exists("styles/toggle.css"):
     with open("styles/toggle.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 else:
-    st.warning("⚠️ toggle.css not found in /styles folder")
+    st.warning("toggle.css not found in /styles folder")
 
 
 # ---------------- HTML TOGGLE BUTTON ----------------
