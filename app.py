@@ -26,9 +26,11 @@ with header_right:
     unselected_border = "#FFFFFF" if is_dark_now else "#000000"
     unselected_text = "#FFFFFF" if is_dark_now else "#000000"
 
-    selected_bg = "#FFFFFF" if is_dark_now else "#000000"
-    selected_text = "#000000" if is_dark_now else "#FFFFFF"
-    selected_border = selected_text
+        # Active pill = pink, text black
+    selected_bg = "#ff99ff"
+    selected_text = "#000000"
+    selected_border = "#000000"
+
 
     selected_theme = option_menu(
         menu_title=None,
@@ -94,7 +96,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {{
 
 /* Top Bar Color Fixed to Pink */
 div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background-color: #cc0066 !important;
+    background-color: #ff99ff !important;
     padding: 18px 24px;
     border-radius: 12px;
     border: 2px solid {text_color};
@@ -165,13 +167,22 @@ col1, col2 = st.columns((2, 1))
 
 with col1:
     st.subheader("PM2.5 Trend")
-    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City",
-                   labels={"PM2.5": "PM2.5 (µg/m³)"})
+    fig1 = px.line(
+        df,
+        x="Timestamp",
+        y="PM2.5",
+        labels={"PM2.5": "PM2.5 (µg/m³)"}
+    )
+    # Single line color based on theme
+    line_color = "#FFFFFF" if dark_mode else "#000000"
+    fig1.update_traces(line=dict(color=line_color))
     st.plotly_chart(style_fig(fig1), use_container_width=True)
-
+    
 with col2:
     st.subheader("PM2.5 Distribution")
-    fig2 = px.histogram(df, x="PM2.5", color="City", nbins=30)
+    fig2 = px.histogram(df, x="PM2.5", nbins=30)
+    bar_color = "#FFFFFF" if dark_mode else "#000000"
+    fig2.update_traces(marker_color=bar_color)
     st.plotly_chart(style_fig(fig2), use_container_width=True)
 
 # ---------------- PIE CHART ----------------
