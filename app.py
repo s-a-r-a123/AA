@@ -23,10 +23,6 @@ h1 { font-size: 38px !important; }
 h2 { font-size: 26px !important; }
 h3 { font-size: 20px !important; }
 
-/* Adjust body text so it doesn’t look too large */
-p, span, div {
-    font-size: 15px !important;
-}
 
 /* Widgets (input, select, button, toggle) */
 .stButton > button,
