@@ -11,6 +11,9 @@ st.set_page_config(page_title="Air Aware", layout="wide")
 if "theme" not in st.session_state:
     st.session_state.theme = "Dark"  # default mode
 
+# Theme value BEFORE user clicks toggle (from previous run)
+is_dark_now = st.session_state.theme == "Dark"
+
 # ---------------- TOP BAR: TITLE + TOGGLE ----------------
 header_left, header_right = st.columns([5, 2])
 
@@ -18,6 +21,15 @@ with header_left:
     st.markdown("<div class='header-title'>Air Aware</div>", unsafe_allow_html=True)
 
 with header_right:
+    # Pill colors depend on current theme (is_dark_now)
+    unselected_bg = "#000000" if is_dark_now else "#FFFFFF"
+    unselected_border = "#FFFFFF" if is_dark_now else "#000000"
+    unselected_text = "#FFFFFF" if is_dark_now else "#000000"
+
+    selected_bg = "#FFFFFF" if is_dark_now else "#000000"
+    selected_text = "#000000" if is_dark_now else "#FFFFFF"
+    selected_border = selected_text
+
     selected_theme = option_menu(
         menu_title=None,
         options=["Light", "Dark"],
@@ -26,37 +38,40 @@ with header_right:
         default_index=1 if st.session_state.theme == "Dark" else 0,
         key="theme_toggle",
         styles={
-            "container": {"padding": "0px", "background": "rgba(0,0,0,0)"},
+            "container": {"padding": "0px", "background": "transparent"},
             "nav-link": {
                 "font-size": "0.9rem",
                 "padding": "6px 22px",
                 "margin": "0 2px",
                 "border-radius": "999px",
                 "transition": "0.25s",
+                "background-color": unselected_bg,
+                "color": unselected_text,
+                "border": f"2px solid {unselected_border}",
             },
+            "nav-link-selected": {
+                "background-color": selected_bg,
+                "color": selected_text,
+                "border-radius": "999px",
+                "font-weight": "600",
+                "border": f"2px solid {selected_border}",
+            },
+            "icon": {"font-size": "1rem"},
         },
     )
 
-# Update stored theme
+# Update stored theme AFTER click
 st.session_state.theme = selected_theme
 dark_mode = st.session_state.theme == "Dark"
 
 # ---------------- THEME RULES ----------------
 if dark_mode:
-    bg_color = "#000000"
-    text_color = "#FFFFFF"
-    pill_bg = "#000000"
-    pill_border = "#FFFFFF"
-    pill_selected_bg = "#FFFFFF"
-    pill_selected_text = "#000000"
+    bg_color = "#000000"          # everything black
+    text_color = "#FFFFFF"        # text white
     plotly_template = "plotly_dark"
 else:
-    bg_color = "#FFFFFF"
-    text_color = "#000000"
-    pill_bg = "#FFFFFF"
-    pill_border = "#000000"
-    pill_selected_bg = "#000000"
-    pill_selected_text = "#FFFFFF"
+    bg_color = "#FFFFFF"          # everything white
+    text_color = "#000000"        # text black
     plotly_template = "plotly_white"
 
 # ---------------- GLOBAL UI CSS ----------------
@@ -92,25 +107,15 @@ div[data-testid="stHorizontalBlock"]:first-of-type {{
     margin-top: 4px;
 }}
 
-/* PILLS */
+/* Let inline styles from option_menu control colors.
+   We only force shape & spacing here. */
 ul {{
     list-style: none;
     padding-left: 0;
 }}
 
-.nav-link {{
-    background-color: {pill_bg} !important;
-    border: 2px solid {pill_border} !important;
-    color: {text_color} !important;
+.nav-link, .nav-link-selected {{
     border-radius: 999px !important;
-}}
-
-.nav-link-selected {{
-    background-color: {pill_selected_bg} !important;
-    color: {pill_selected_text} !important;
-    border: 2px solid {pill_selected_text} !important;
-    border-radius: 999px !important;
-    font-weight: 600 !important;
 }}
 
 </style>
@@ -172,7 +177,8 @@ col1, col2 = st.columns((2, 1))
 
 with col1:
     st.subheader("PM2.5 Trend")
-    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City", labels={"PM2.5": "PM2.5 (µg/m³)"})
+    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City",
+                   labels={"PM2.5": "PM2.5 (µg/m³)"})
     st.plotly_chart(style_fig(fig1), use_container_width=True)
 
 with col2:
@@ -182,8 +188,13 @@ with col2:
 
 # ---------------- PIE CHART ----------------
 def categorize(x):
-    if pd.isna(x): return None
-    return "Good" if x <= 30 else "Moderate" if x <= 60 else "Poor"
+    if pd.isna(x):
+        return None
+    if x <= 30:
+        return "Good"
+    elif x <= 60:
+        return "Moderate"
+    return "Poor"
 
 df["Category"] = df["PM2.5"].apply(categorize)
 cat_counts = df["Category"].value_counts().reset_index()
