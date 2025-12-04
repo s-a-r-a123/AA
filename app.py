@@ -6,38 +6,39 @@ import os
 # ---------- PAGE CONFIG ----------
 st.set_page_config(page_title="Air Aware", layout="wide")
 
-# ---------- THEME TOGGLE ----------
-dark_mode = st.toggle("Dark mode", value=True)
+# ---------- TOP BAR (TITLE + THEME TOGGLE) ----------
+header_col, toggle_col = st.columns([4, 1])
 
+with header_col:
+    st.markdown(
+        "<h1 style='text-align: center;'>Air Aware</h1>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<p style='text-align: center;'>A simple dashboard tracking PM2.5 levels and air quality status.</p>",
+        unsafe_allow_html=True,
+    )
+
+with toggle_col:
+    dark_mode = st.checkbox("🌙 Dark mode", value=True)
+
+# ---------- THEME SETTINGS ----------
 if dark_mode:
     bg_color = "#0e1117"
-    text_color = "#ffffff"
     plotly_template = "plotly_dark"
 else:
     bg_color = "#ffffff"
-    text_color = "#000000"
     plotly_template = "plotly_white"
 
-# Apply app background + text color
+# Page background only (don’t force text color globally)
 st.markdown(
     f"""
     <style>
     .stApp {{
         background-color: {bg_color};
-        color: {text_color};
     }}
     </style>
     """,
-    unsafe_allow_html=True
-)
-
-# ---------- HEADER ----------
-st.markdown(
-    f"<h1 style='text-align: center; color:{text_color};'>Air Aware</h1>",
-    unsafe_allow_html=True,
-)
-st.markdown(
-    f"<p style='text-align: center; color:{text_color};'>A simple dashboard tracking PM2.5 levels and air quality status.</p>",
     unsafe_allow_html=True,
 )
 
@@ -69,9 +70,8 @@ if not os.path.exists(DATA_PATH):
     st.stop()
 
 df = load_data(DATA_PATH)
-
-# Use ALL data (no filters at all)
 df_f = df.copy()
+
 st.markdown(f"**Total records:** {len(df_f):,}")
 
 # ---------- MAIN CHARTS ----------
@@ -94,7 +94,6 @@ with colA:
             height=400,
             paper_bgcolor=bg_color,
             plot_bgcolor=bg_color,
-            font_color=text_color,
         )
         st.plotly_chart(fig_trend, use_container_width=True)
 
@@ -114,7 +113,6 @@ with colB:
             height=400,
             paper_bgcolor=bg_color,
             plot_bgcolor=bg_color,
-            font_color=text_color,
         )
         st.plotly_chart(fig_hist, use_container_width=True)
 
@@ -131,14 +129,17 @@ def categorize(x):
     return "Poor"
 
 df_f["Category"] = df_f["PM2.5"].apply(categorize)
+
 cat_counts = df_f["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
+
+# 🚫 Remove 'Unknown' from the pie
+cat_counts = cat_counts[cat_counts["Category"] != "Unknown"]
 
 color_map = {
     "Good": "#4CAF50",
     "Moderate": "#FFC107",
     "Poor": "#F44336",
-    "Unknown": "#9E9E9E",
 }
 
 fig_pie = px.pie(
@@ -154,6 +155,5 @@ fig_pie.update_traces(textinfo="percent+label")
 fig_pie.update_layout(
     paper_bgcolor=bg_color,
     plot_bgcolor=bg_color,
-    font_color=text_color,
 )
 st.plotly_chart(fig_pie, use_container_width=True)
