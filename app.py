@@ -10,33 +10,24 @@ st.set_page_config(page_title="Air Aware", layout="wide")
 top_col1, top_col2 = st.columns([5, 1])
 
 with top_col2:
-    # Sun | toggle | Moon row
-    sun_col, toggle_col, moon_col = st.columns([1, 2, 1])
-    with sun_col:
-        st.markdown(
-            "<div style='text-align:right; font-size:1.2rem;'>🌞</div>",
-            unsafe_allow_html=True,
-        )
-    with toggle_col:
-        # Label "Theme" (we'll hide the text via CSS but keep it for aria-label)
-        dark_mode = st.toggle("", value=True, key="theme_toggle")
-    with moon_col:
-        st.markdown(
-            "<div style='text-align:left; font-size:1.2rem;'>🌙</div>",
-            unsafe_allow_html=True,
-        )
+    # Wrap the toggle in a small container we can style safely
+    st.markdown('<div class="theme-toggle-container">', unsafe_allow_html=True)
+    dark_mode = st.toggle("Dark mode", value=True, key="theme_toggle")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------- THEME SETTINGS ----------------
 if dark_mode:
     bg_color = "#0e1117"
     text_color = "#FFFFFF"
     plotly_template = "plotly_dark"
+    toggle_container_bg = "rgba(255, 255, 255, 0.10)"
 else:
     bg_color = "#FFFFFF"
     text_color = "#000000"
     plotly_template = "plotly_white"
+    toggle_container_bg = "rgba(0, 0, 0, 0.08)"
 
-# ---------------- GLOBAL THEME + FONT + SMALL TOGGLE CSS ----------------
+# ---------------- GLOBAL THEME + FONT + TOGGLE CONTAINER CSS ----------------
 st.markdown(
     f"""
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -55,18 +46,36 @@ st.markdown(
             color: {text_color} !important;
         }}
 
-        /* Hide the "Theme" text on the toggle, keep only the switch */
-        div[data-testid="stToggle"][aria-label="Theme"] label > div:first-child {{
-            display: none !important;
-        }}
-
-        /* Make the toggle row sit nicely in the top-right */
-        div[data-testid="stToggle"][aria-label="Theme"] {{
+        /* ---- Pretty container around the built-in toggle ---- */
+        .theme-toggle-container {{
+            position: fixed;
+            top: 16px;
+            right: 24px;
+            z-index: 1000;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: {toggle_container_bg};
+            backdrop-filter: blur(10px);
             display: flex;
-            justify-content: center;
+            align-items: center;
+            gap: 6px;
         }}
 
-        /* Make widget texts (if you add later) use the same font & color */
+        .theme-toggle-container [data-testid="stToggle"] {{
+            margin: 0;
+        }}
+
+        .theme-toggle-container label {{
+            font-size: 0.9rem;
+            font-weight: 500;
+        }}
+
+        /* Optional: slightly shrink the label text "Dark mode" */
+        .theme-toggle-container label > div:first-child {{
+            font-size: 0.85rem;
+        }}
+
+        /* Ensure widget labels keep consistent font & color */
         .stTextInput input,
         .stSelectbox div,
         .stMultiSelect div,
