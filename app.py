@@ -7,54 +7,59 @@ import os
 st.set_page_config(page_title="Air Aware", layout="wide")
 
 # ---------------- THEME TOGGLE (TOP RIGHT, STYLED) ----------------
-toggle_css = """
+# ---------------- FIXED: HIGH-VISIBILITY TOGGLE STYLE ----------------
+toggle_css = f"""
 <style>
-/* Move toggle to right corner */
-.theme-toggle-container {
+.theme-toggle-container {{
     position: fixed;
     top: 18px;
     right: 25px;
     z-index: 9999;
-}
+    padding: 6px 10px;
+    background: {"#FFFFFF" if dark_mode else "#000000"};
+    border-radius: 30px;
+    border: 2px solid {"#FFFFFF" if dark_mode else "#000000"};
+}}
 
-/* Hide text label */
-.theme-toggle-container label span {
+.theme-toggle-container label span {{
     display: none !important;
-}
+}}
 
-/* Make toggle bigger and outlined */
-.theme-toggle-container [data-testid="stToggle"] > label {
-    width: 55px !important;
-    height: 30px !important;
+.theme-toggle-container [data-testid="stToggle"] > label {{
+    width: 50px !important;
+    height: 26px !important;
     padding: 0 !important;
-}
+}}
 
-/* Track (border changes based on theme) */
-.theme-toggle-container [data-testid="stToggle"] input + div {
-    width: 55px !important;
-    height: 28px !important;
+.theme-toggle-container [data-testid="stToggle"] input + div {{
+    width: 50px !important;
+    height: 26px !important;
     border-radius: 20px !important;
-    border: 2px solid VAR_BORDER_COLOR;
-    background-color: transparent !important;
-}
+    border: 2px solid {"#FFFFFF" if dark_mode else "#000000"};
+    background: transparent !important;
+}}
 
-/* Thumb styling (circle) */
-.theme-toggle-container [data-testid="stToggle"] input + div::before {
-    width: 22px !important;
-    height: 22px !important;
-    top: 3px !important;
-    left: 3px !important;
+.theme-toggle-container [data-testid="stToggle"] input + div::before {{
+    width: 20px !important;
+    height: 20px !important;
+    top: 2px !important;
+    left: 2px !important;
     border-radius: 50% !important;
-    background-color: VAR_THUMB_BG;
-    border: 2px solid VAR_THUMB_BORDER;
-}
+    background: {"#FFFFFF" if not dark_mode else "#000000"} !important;
+    border: 2px solid {"#000000" if not dark_mode else "#FFFFFF"} !important;
+}}
 
-/* Move thumb on check */
-.theme-toggle-container [data-testid="stToggle"] input:checked + div::before {
-    transform: translateX(25px) !important;
-}
+.theme-toggle-container [data-testid="stToggle"] input:checked + div::before {{
+    transform: translateX(22px) !important;
+}}
 </style>
 """
+
+st.markdown(toggle_css, unsafe_allow_html=True)
+
+st.markdown('<div class="theme-toggle-container">', unsafe_allow_html=True)
+dark_mode = st.toggle("", value=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # Inject CSS placeholder that we will replace dynamically
 st.markdown(toggle_css.replace("VAR_BORDER_COLOR", "#000000")
