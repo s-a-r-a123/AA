@@ -93,14 +93,13 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {{
 }}
 
 /* Top Bar Color Fixed to Pink */
-div[data-testid="stHorizontalBlock"]:first-of-type {
+div[data-testid="stHorizontalBlock"]:first-of-type {{
     background-color: #ff99ff !important;
     padding: 18px 24px;
     border-radius: 12px;
     border: 2px solid {text_color};
     margin-bottom: 28px;
-}
-
+}}
 
 .header-title {{
     font-size: 26px;
@@ -123,12 +122,9 @@ ul {{
 """,
     unsafe_allow_html=True,
 )
-
-# ---------------- SUBTITLE ----------------
-#st.markdown(
- #   "<p style='font-size:18px; text-align:center;'>PM2.5 Air Quality Dashboard</p>",
-  #  unsafe_allow_html=True,
-#)
+""",
+    unsafe_allow_html=True,
+)
 
 # ---------------- LOAD DATA ----------------
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
@@ -155,11 +151,6 @@ if not os.path.exists(DATA_PATH):
 
 df = load_data(DATA_PATH)
 
-# ---------------- RECORD COUNT ----------------
-#st.markdown(
-  #  f"<p style='text-align:center; font-size:18px;'><b>Total Records:</b> {len(df):,}</p>",
- #   unsafe_allow_html=True,
-#)
 # ---------------- PLOT STYLE FUNCTION ----------------
 def style_fig(fig):
     fig.update_layout(
