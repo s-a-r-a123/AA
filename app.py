@@ -15,6 +15,11 @@ if "theme" not in st.session_state:
     st.session_state.theme = "Dark"  # default
 
 with top_col2:
+    # Decide unselected pill colors based on current theme
+    is_dark_now = st.session_state.theme == "Dark"
+    nav_bg = "#111827" if is_dark_now else "#E5E7EB"     # dark grey / light grey
+    nav_text = "#9CA3AF" if is_dark_now else "#4B5563"   # muted text
+
     # Wrap option_menu in a right-aligned container
     st.markdown(
         "<div style='display:flex; justify-content:flex-end;'>",
@@ -24,7 +29,7 @@ with top_col2:
     selected_theme = option_menu(
         menu_title=None,
         options=["Light", "Dark"],
-        icons=["sun", "moon"],         # optional icons
+        icons=["sun", "moon"],
         orientation="horizontal",
         default_index=1 if st.session_state.theme == "Dark" else 0,
         key="theme_option",
@@ -35,186 +40,12 @@ with top_col2:
                 "border-radius": "999px",
             },
             "nav-link": {
-                "font-size": "0.8rem",
-                "padding": "4px 14px",
+                "font-size": "0.9rem",
+                "padding": "6px 22px",
                 "margin": "0 2px",
                 "border-radius": "999px",
-                "color": "#6b7280",
-                "background-color": "rgba(148,163,184,0.15)",
+                "color": nav_text,
+                "background-color": nav_bg,
+                "transition": "all 0.2s ease-in-out",
             },
-            "nav-link-selected": {
-                "background-color": "#6366f1",
-                "color": "white",
-                "border-radius": "999px",
-            },
-            "icon": {
-                "font-size": "0.9rem",
-            },
-        },
-    )
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# Update session theme from selection
-st.session_state.theme = selected_theme
-dark_mode = st.session_state.theme == "Dark"
-
-# ---------------- THEME SETTINGS ----------------
-if dark_mode:
-    bg_color = "#0e1117"
-    text_color = "#FFFFFF"
-    plotly_template = "plotly_dark"
-else:
-    bg_color = "#FFFFFF"
-    text_color = "#000000"
-    plotly_template = "plotly_white"
-
-# ---------------- GLOBAL THEME + FONT ----------------
-st.markdown(
-    f"""
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        * {{
-            font-family: 'Poppins', sans-serif !important;
-        }}
-
-        .stApp {{
-            background-color: {bg_color} !important;
-            color: {text_color} !important;
-        }}
-
-        h1, h2, h3, h4, h5, h6, p, span, div, label {{
-            color: {text_color} !important;
-        }}
-
-        /* Ensure widget labels & inputs get the same font/color */
-        .stTextInput input,
-        .stSelectbox div,
-        .stMultiSelect div,
-        .stCheckbox label,
-        .stToggle label {{
-            font-family: 'Poppins', sans-serif !important;
-            color: {text_color} !important;
-        }}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ---------------- TITLE (CENTERED IN LEFT COL) ----------------
-with top_col1:
-    st.markdown(
-        "<h1 style='text-align:center; margin-top:10px;'>Air Aware</h1>",
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        "<p style='text-align:center; font-size:18px; margin-top:-5px;'>"
-        "PM2.5 Air Quality Dashboard"
-        "</p>",
-        unsafe_allow_html=True,
-    )
-
-# ---------------- LOAD DATA ----------------
-DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
-
-@st.cache_data
-def load_data(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path)
-
-    # Parse timestamp
-    if "Timestamp" in df.columns:
-        df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
-
-    # Standardize PM2.5 column name
-    for c in df.columns:
-        if "pm2" in c.lower():
-            df.rename(columns={c: "PM2.5"}, inplace=True)
-            break
-
-    df["PM2.5"] = pd.to_numeric(df["PM2.5"], errors="coerce")
-    return df
-
-if not os.path.exists(DATA_PATH):
-    st.error(f"❌ Missing required file: {DATA_PATH}")
-    st.stop()
-
-df = load_data(DATA_PATH)
-
-# ---------------- RECORD COUNT ----------------
-st.markdown(
-    f"<p style='font-size:18px; text-align:center; margin-bottom:20px;'>"
-    f"<b>Total Records:</b> {len(df):,}</p>",
-    unsafe_allow_html=True,
-)
-
-# ---------------- PLOT STYLING HELPER ----------------
-def style_fig(fig):
-    fig.update_layout(
-        template=plotly_template,
-        paper_bgcolor=bg_color,
-        plot_bgcolor=bg_color,
-        font=dict(color=text_color),
-        legend=dict(font=dict(color=text_color)),
-    )
-    fig.update_xaxes(title_font_color=text_color, tickfont_color=text_color)
-    fig.update_yaxes(title_font_color=text_color, tickfont_color=text_color)
-    return fig
-
-# ---------------- CHARTS ----------------
-col1, col2 = st.columns((2, 1))
-
-with col1:
-    st.subheader("PM2.5 Trend")
-    fig1 = px.line(
-        df,
-        x="Timestamp",
-        y="PM2.5",
-        color="City",
-        labels={"PM2.5": "PM2.5 (µg/m³)"}
-    )
-    st.plotly_chart(style_fig(fig1), use_container_width=True)
-
-with col2:
-    st.subheader("PM2.5 Histogram")
-    fig2 = px.histogram(
-        df,
-        x="PM2.5",
-        nbins=30,
-        labels={"PM2.5": "PM2.5 (µg/m³)"},
-        color="City"
-    )
-    st.plotly_chart(style_fig(fig2), use_container_width=True)
-
-# ---------------- PIE CHART ----------------
-def categorize(pm):
-    if pd.isna(pm):
-        return None
-    if pm <= 30:
-        return "Good"
-    elif pm <= 60:
-        return "Moderate"
-    return "Poor"
-
-df["Category"] = df["PM2.5"].apply(categorize)
-cat_counts = (
-    df["Category"]
-    .dropna()
-    .value_counts()
-    .reset_index()
-)
-cat_counts.columns = ["Category", "Count"]
-
-color_map = {"Good": "#4CAF50", "Moderate": "#FFC107", "Poor": "#F44336"}
-
-st.subheader("Air Quality Categories")
-fig3 = px.pie(
-    cat_counts,
-    names="Category",
-    values="Count",
-    color="Category",
-    color_discrete_map=color_map,
-    hole=0.25,
-)
-fig3.update_traces(textinfo="percent+label")
-st.plotly_chart(style_fig(fig3), use_container_width=True)
+            "nav-link-selec
