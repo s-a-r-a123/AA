@@ -122,9 +122,6 @@ ul {{
 """,
     unsafe_allow_html=True,
 )
-""",
-    unsafe_allow_html=True,
-)
 
 # ---------------- LOAD DATA ----------------
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
