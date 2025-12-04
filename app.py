@@ -9,18 +9,32 @@ st.set_page_config(page_title="Air Aware", layout="wide")
 st.markdown("""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Acme&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kite+One&display=swap');
 
 * {
-    font-family: 'Acme', sans-serif !important;
+    font-family: "Kite One", sans-serif !important;
+    font-weight: 400;
+    letter-spacing: 0.5px;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 600 !important;
+/* Larger, cleaner title sizes */
+h1 { font-size: 40px !important; }
+h2 { font-size: 28px !important; }
+h3 { font-size: 22px !important; }
+
+/* Ensure widgets (selectbox, input, buttons) also use the font */
+.stButton > button,
+.stTextInput > div > input,
+.stSelectbox > div,
+.stRadio > div,
+.stCheckbox label {
+    font-family: "Kite One", sans-serif !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
+
+
 #THEME MEMORY
 if "theme" not in st.session_state:
     st.session_state.theme = "Dark" 
