@@ -45,7 +45,7 @@ with header_right:
                 "margin": "0 2px",
                 "border-radius": "999px",
                 "transition": "0.25s",
-                "background-color": "#66cc99",
+                "background-color": unselected_bg,
                 "color": unselected_text,
                 "border": f"2px solid {unselected_border}",
             },
@@ -94,7 +94,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {{
 
 /* Top extended bar: DARK PINK, only this block */
 div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background-color: #d10075 !important;  /* dark pink bar */
+    background-color: #FF0000 !important;  /* dark pink bar */
     padding: 18px 24px;
     border-radius: 12px;
     border: 2px solid {text_color};
