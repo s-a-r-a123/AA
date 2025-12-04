@@ -94,7 +94,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {{
 
 /* Top Bar Color Fixed to Pink */
 div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background-color: #ff99ff !important;
+    background-color: #cc0066 !important;
     padding: 18px 24px;
     border-radius: 12px;
     border: 2px solid {text_color};
