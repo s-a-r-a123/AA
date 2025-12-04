@@ -5,35 +5,46 @@ import os
 from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="Air Aware", layout="wide")
+
 #FONT
 st.markdown("""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Kite+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
+/* Apply Rubik Mono One Everywhere */
 * {
-    font-family: "Kite One", sans-serif !important;
-    font-weight: 400;
-    letter-spacing: 0.5px;
+    font-family: "Rubik Mono One", sans-serif !important;
+    letter-spacing: 1px;
 }
 
-/* Larger, cleaner title sizes */
-h1 { font-size: 40px !important; }
-h2 { font-size: 28px !important; }
-h3 { font-size: 22px !important; }
+/* Title sizes */
+h1 { font-size: 38px !important; }
+h2 { font-size: 26px !important; }
+h3 { font-size: 20px !important; }
 
-/* Ensure widgets (selectbox, input, buttons) also use the font */
+/* Adjust body text so it doesn’t look too large */
+p, span, div {
+    font-size: 15px !important;
+}
+
+/* Widgets (input, select, button, toggle) */
 .stButton > button,
 .stTextInput > div > input,
-.stSelectbox > div,
-.stRadio > div,
+.stSelectbox div,
+.stRadio label,
 .stCheckbox label {
-    font-family: "Kite One", sans-serif !important;
+    font-family: "Rubik Mono One", sans-serif !important;
+    font-size: 14px !important;
+}
+
+/* Plotly chart font override */
+.plotly .main-svg text {
+    font-family: "Rubik Mono One", sans-serif !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
-
 
 #THEME MEMORY
 if "theme" not in st.session_state:
