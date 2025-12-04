@@ -162,4 +162,37 @@ with col2:
         labels={"PM2.5": "PM2.5 (µg/m³)"},
         color="City"
     )
-    st.plotly_chart(style_fig(fig2), use_container_w
+    st.plotly_chart(style_fig(fig2), use_container_width=True)
+
+# ---------------- PIE CHART ----------------
+def categorize(pm):
+    if pd.isna(pm):
+        return None
+    if pm <= 30:
+        return "Good"
+    elif pm <= 60:
+        return "Moderate"
+    return "Poor"
+
+df["Category"] = df["PM2.5"].apply(categorize)
+cat_counts = (
+    df["Category"]
+    .dropna()
+    .value_counts()
+    .reset_index()
+)
+cat_counts.columns = ["Category", "Count"]
+
+color_map = {"Good": "#4CAF50", "Moderate": "#FFC107", "Poor": "#F44336"}
+
+st.subheader("Air Quality Categories")
+fig3 = px.pie(
+    cat_counts,
+    names="Category",
+    values="Count",
+    color="Category",
+    color_discrete_map=color_map,
+    hole=0.25,
+)
+fig3.update_traces(textinfo="percent+label")
+st.plotly_chart(style_fig(fig3), use_container_width=True)
