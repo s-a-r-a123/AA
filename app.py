@@ -4,7 +4,7 @@ import plotly.express as px
 import os
 from streamlit_option_menu import option_menu
 
-# ---------------- PAGE CONFIG ----------------
+# ---------------- PAGE CONFIG ---------------
 st.set_page_config(page_title="Air Aware", layout="wide")
 
 # ---------------- TOP BAR: TITLE (LEFT) + THEME PILL TOGGLE (RIGHT) ----------------
