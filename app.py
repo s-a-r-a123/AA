@@ -198,12 +198,38 @@ df["Category"] = df["PM2.5"].apply(categorize)
 cat_counts = df["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
 
+# 🌈 Pastel color palette
+pastel_colors = {
+    "Good":     "#A3E4D7",  # mint pastel
+    "Moderate": "#FAD7A0",  # soft peach
+    "Poor":     "#F5B7B1",  # light rose
+}
+
 st.subheader("Air Quality Classification")
+
 fig3 = px.pie(
     cat_counts,
     names="Category",
     values="Count",
-    hole=0.25
+    hole=0.25,
+    color="Category",
+    color_discrete_map=pastel_colors
 )
-fig3.update_traces(textinfo="percent+label")
+
+# Text + slight "lift" effect so it feels more alive
+fig3.update_traces(
+    textinfo="label+percent",
+    textfont_size=16,
+    pull=[0.03] * cat_counts.shape[0]   # small pull-out for all slices
+)
+
+# 🌀 Smooth transition animation when data/theme updates
+fig3.update_layout(
+    transition=dict(
+        duration=600,          # ms
+        easing="cubic-in-out"  # smooth easing curve
+    )
+)
+
 st.plotly_chart(style_fig(fig3), use_container_width=True)
+
