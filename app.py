@@ -124,10 +124,10 @@ ul {{
 )
 
 # ---------------- SUBTITLE ----------------
-st.markdown(
-    "<p style='font-size:18px; text-align:center;'>PM2.5 Air Quality Dashboard</p>",
-    unsafe_allow_html=True,
-)
+#st.markdown(
+ #   "<p style='font-size:18px; text-align:center;'>PM2.5 Air Quality Dashboard</p>",
+  #  unsafe_allow_html=True,
+#)
 
 # ---------------- LOAD DATA ----------------
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
@@ -155,11 +155,12 @@ if not os.path.exists(DATA_PATH):
 df = load_data(DATA_PATH)
 
 # ---------------- RECORD COUNT ----------------
+"""
 st.markdown(
     f"<p style='text-align:center; font-size:18px;'><b>Total Records:</b> {len(df):,}</p>",
     unsafe_allow_html=True,
 )
-
+"""
 # ---------------- PLOT STYLE FUNCTION ----------------
 def style_fig(fig):
     fig.update_layout(
