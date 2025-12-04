@@ -3,138 +3,118 @@ import pandas as pd
 import plotly.express as px
 import os
 
-# ---------- PAGE CONFIG ----------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Air Aware", layout="wide")
 
-# ---------- TOP BAR (TITLE + THEME TOGGLE) ----------
-header_col, toggle_col = st.columns([4, 1])
+# ---------------- TOP BAR ----------------
+left, right = st.columns([6, 1])
 
-with header_col:
-    st.markdown(
-        "<h1 style='text-align: center;'>Air Aware</h1>",
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        "<p style='text-align: center;'>A simple dashboard tracking PM2.5 levels and air quality status.</p>",
-        unsafe_allow_html=True,
-    )
+with right:
+    dark_mode = st.toggle("🌙", value=True)
 
-with toggle_col:
-    dark_mode = st.checkbox("🌙 Dark mode", value=True)
-
-# ---------- THEME SETTINGS ----------
+# ---------------- THEME SETTINGS ----------------
 if dark_mode:
     bg_color = "#0e1117"
+    text_color = "white"
     plotly_template = "plotly_dark"
 else:
-    bg_color = "#ffffff"
+    bg_color = "white"
+    text_color = "black"
     plotly_template = "plotly_white"
 
-# Page background only (don’t force text color globally)
+# Inject text + background styling
 st.markdown(
     f"""
     <style>
-    .stApp {{
-        background-color: {bg_color};
-    }}
+        .stApp {{
+            background-color: {bg_color};
+            color: {text_color};
+        }}
+        h1, h2, h3, h4, h5, h6, p, div, label {{
+            color: {text_color} !important;
+        }}
+        .stPlotlyChart {{
+            color: {text_color};
+        }}
+        .stMarkdown {{
+            color: {text_color};
+        }}
     </style>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
 
-# ---------- LOAD DATA ----------
+# ---------------- TITLE ----------------
+st.markdown(f"<h1 style='text-align: center;'>{'Air Aware'}</h1>", unsafe_allow_html=True)
+st.markdown(
+    f"<p style='text-align: center; font-size:18px;'>A simple dashboard tracking PM2.5 levels and air quality status.</p>",
+    unsafe_allow_html=True
+)
+
+# ---------------- LOAD DATA ----------------
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
 
 @st.cache_data
 def load_data(path):
     df = pd.read_csv(path)
 
-    # Timestamp
     if "Timestamp" in df.columns:
         df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
 
-    # Standardise PM2.5 column name
-    pm_col = None
     for c in df.columns:
         if "pm2" in c.lower():
-            pm_col = c
+            df.rename(columns={c: "PM2.5"}, inplace=True)
             break
 
-    df.rename(columns={pm_col: "PM2.5"}, inplace=True)
     df["PM2.5"] = pd.to_numeric(df["PM2.5"], errors="coerce")
-
     return df
 
 if not os.path.exists(DATA_PATH):
-    st.error(f"❌ Missing file: {DATA_PATH}. Please add cleaned_air_data.csv inside /data folder.")
+    st.error(f"❌ Missing required file: {DATA_PATH}")
     st.stop()
 
 df = load_data(DATA_PATH)
-df_f = df.copy()
 
-st.markdown(f"**Total records:** {len(df_f):,}")
+st.markdown(f"**Total Records:** {len(df):,}")
 
-# ---------- MAIN CHARTS ----------
-colA, colB = st.columns((2, 1))
+# ---------------- CHART SECTION ----------------
+col1, col2 = st.columns((2, 1))
 
-with colA:
+# -------- Line Chart --------
+with col1:
     st.subheader("PM2.5 Trend")
-    if df_f.empty:
-        st.info("No data available.")
-    else:
-        fig_trend = px.line(
-            df_f,
-            x="Timestamp",
-            y="PM2.5",
-            color="City",
-            labels={"PM2.5": "PM2.5 (µg/m³)"},
-            template=plotly_template,
-        )
-        fig_trend.update_layout(
-            height=400,
-            paper_bgcolor=bg_color,
-            plot_bgcolor=bg_color,
-        )
-        st.plotly_chart(fig_trend, use_container_width=True)
+    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City", template=plotly_template)
+    fig1.update_layout(
+        paper_bgcolor=bg_color,
+        plot_bgcolor=bg_color,
+        font_color=text_color,
+    )
+    st.plotly_chart(fig1, use_container_width=True)
 
-with colB:
+# -------- Histogram --------
+with col2:
     st.subheader("PM2.5 Histogram")
-    if df_f.empty:
-        st.info("No data available.")
-    else:
-        fig_hist = px.histogram(
-            df_f,
-            x="PM2.5",
-            nbins=30,
-            labels={"PM2.5": "PM2.5 (µg/m³)"},
-            template=plotly_template,
-        )
-        fig_hist.update_layout(
-            height=400,
-            paper_bgcolor=bg_color,
-            plot_bgcolor=bg_color,
-        )
-        st.plotly_chart(fig_hist, use_container_width=True)
+    fig2 = px.histogram(df, x="PM2.5", nbins=30, template=plotly_template)
+    fig2.update_layout(
+        paper_bgcolor=bg_color,
+        plot_bgcolor=bg_color,
+        font_color=text_color,
+    )
+    st.plotly_chart(fig2, use_container_width=True)
 
-# ---------- PIE CHART ----------
-st.subheader("Air Quality Category (PM2.5)")
-
+# -------- Pie Chart --------
 def categorize(x):
     if pd.isna(x):
-        return "Unknown"
+        return None
     if x <= 30:
         return "Good"
     elif x <= 60:
         return "Moderate"
     return "Poor"
 
-df_f["Category"] = df_f["PM2.5"].apply(categorize)
-
-cat_counts = df_f["Category"].value_counts().reset_index()
+df["Category"] = df["PM2.5"].apply(categorize)
+cat_counts = df["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
-
-# 🚫 Remove 'Unknown' from the pie
-cat_counts = cat_counts[cat_counts["Category"] != "Unknown"]
 
 color_map = {
     "Good": "#4CAF50",
@@ -142,7 +122,8 @@ color_map = {
     "Poor": "#F44336",
 }
 
-fig_pie = px.pie(
+st.subheader("Air Quality Category (PM2.5)")
+fig3 = px.pie(
     cat_counts,
     names="Category",
     values="Count",
@@ -151,9 +132,10 @@ fig_pie = px.pie(
     template=plotly_template,
     hole=0.25,
 )
-fig_pie.update_traces(textinfo="percent+label")
-fig_pie.update_layout(
+fig3.update_layout(
     paper_bgcolor=bg_color,
     plot_bgcolor=bg_color,
+    font_color=text_color,
 )
-st.plotly_chart(fig_pie, use_container_width=True)
+fig3.update_traces(textinfo="percent+label")
+st.plotly_chart(fig3, use_container_width=True)
