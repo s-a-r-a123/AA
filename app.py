@@ -80,7 +80,7 @@ st.markdown(
 <style>
 
 * {{
-    font-family: 'Poppins', sans-serif !important;
+    font-family: 'Acme', sans-serif !important;
 }}
 
 .stApp {{
