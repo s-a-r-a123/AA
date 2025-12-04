@@ -20,9 +20,7 @@ nav_text = "#9CA3AF" if is_dark_now else "#4B5563"    # pill text
 bar_bg = "#020617" if is_dark_now else "#F3F4F6"      # top bar background
 bar_text = "#F9FAFB" if is_dark_now else "#0F172A"    # top bar title color
 
-# ---------------- HEADER BAR (TITLE LEFT, PILL TOGGLE RIGHT) ----------------
-st.markdown("<div class='header-bar'>", unsafe_allow_html=True)
-
+# ---------------- TOP ROW: TITLE LEFT + TOGGLE RIGHT ----------------
 header_left, header_right = st.columns([5, 2])
 
 with header_left:
@@ -73,8 +71,6 @@ with header_right:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)  # close .header-bar div
-
 # Update session theme based on pill selection
 st.session_state.theme = selected_theme
 dark_mode = st.session_state.theme == "Dark"
@@ -89,7 +85,7 @@ else:
     text_color = "#000000"
     plotly_template = "plotly_white"
 
-# ---------------- GLOBAL THEME + FONT + HEADER BAR CSS ----------------
+# ---------------- GLOBAL THEME + FONT + "BAR" CSS ----------------
 st.markdown(
     f"""
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -108,19 +104,21 @@ st.markdown(
             color: {text_color} !important;
         }}
 
-        /* Header bar styling */
-        .header-bar {{
-            width: 100%;
+        /* Make the FIRST horizontal block (the row with your columns)
+           look like a full-width nav bar with title + toggle inside */
+        div[data-testid="stHorizontalBlock"]:first-of-type {{
             background-color: {bar_bg};
-            padding: 12px 20px;
+            padding: 12px 20px 8px 20px;
             border-radius: 12px;
-            margin-bottom: 24px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            margin-bottom: 24px;
         }}
+
         .header-title {{
             font-size: 24px;
             font-weight: 600;
             color: {bar_text};
+            margin-top: 2px;
         }}
 
         /* Ensure widget labels & inputs get the same font/color */
