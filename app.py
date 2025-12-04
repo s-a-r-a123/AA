@@ -18,7 +18,7 @@ else:
     text_color = "#000000"
     plotly_template = "plotly_white"
 
-# Apply simple background + text color
+# Apply app background + text color
 st.markdown(
     f"""
     <style>
@@ -70,32 +70,9 @@ if not os.path.exists(DATA_PATH):
 
 df = load_data(DATA_PATH)
 
-# ---------- FILTERS (TOP, NOT SIDEBAR) ----------
-st.subheader("Filters")
-
-c1, c2 = st.columns(2)
-
-cities = df["City"].dropna().unique().tolist()
-
-with c1:
-    selected_cities = st.multiselect("Select city:", cities, default=cities)
-
-with c2:
-    date_range = st.date_input(
-        "Select date range:",
-        [df["Timestamp"].min(), df["Timestamp"].max()]
-    )
-
-start_date, end_date = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
-
-mask = (
-    df["City"].isin(selected_cities)
-    & (df["Timestamp"] >= start_date)
-    & (df["Timestamp"] <= end_date)
-)
-df_f = df.loc[mask].copy()
-
-st.markdown(f"**Records displayed:** {len(df_f):,}")
+# Use ALL data (no filters at all)
+df_f = df.copy()
+st.markdown(f"**Total records:** {len(df_f):,}")
 
 # ---------- MAIN CHARTS ----------
 colA, colB = st.columns((2, 1))
@@ -103,7 +80,7 @@ colA, colB = st.columns((2, 1))
 with colA:
     st.subheader("PM2.5 Trend")
     if df_f.empty:
-        st.info("No data found for selected filters.")
+        st.info("No data available.")
     else:
         fig_trend = px.line(
             df_f,
@@ -113,13 +90,18 @@ with colA:
             labels={"PM2.5": "PM2.5 (µg/m³)"},
             template=plotly_template,
         )
-        fig_trend.update_layout(height=400)
+        fig_trend.update_layout(
+            height=400,
+            paper_bgcolor=bg_color,
+            plot_bgcolor=bg_color,
+            font_color=text_color,
+        )
         st.plotly_chart(fig_trend, use_container_width=True)
 
 with colB:
     st.subheader("PM2.5 Histogram")
     if df_f.empty:
-        st.info("No data found for selected filters.")
+        st.info("No data available.")
     else:
         fig_hist = px.histogram(
             df_f,
@@ -128,7 +110,12 @@ with colB:
             labels={"PM2.5": "PM2.5 (µg/m³)"},
             template=plotly_template,
         )
-        fig_hist.update_layout(height=400)
+        fig_hist.update_layout(
+            height=400,
+            paper_bgcolor=bg_color,
+            plot_bgcolor=bg_color,
+            font_color=text_color,
+        )
         st.plotly_chart(fig_hist, use_container_width=True)
 
 # ---------- PIE CHART ----------
@@ -144,7 +131,6 @@ def categorize(x):
     return "Poor"
 
 df_f["Category"] = df_f["PM2.5"].apply(categorize)
-
 cat_counts = df_f["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
 
@@ -165,6 +151,9 @@ fig_pie = px.pie(
     hole=0.25,
 )
 fig_pie.update_traces(textinfo="percent+label")
+fig_pie.update_layout(
+    paper_bgcolor=bg_color,
+    plot_bgcolor=bg_color,
+    font_color=text_color,
+)
 st.plotly_chart(fig_pie, use_container_width=True)
-
-# ✅ No raw dataset table and no download button anywhere
