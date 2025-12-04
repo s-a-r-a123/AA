@@ -155,12 +155,10 @@ if not os.path.exists(DATA_PATH):
 df = load_data(DATA_PATH)
 
 # ---------------- RECORD COUNT ----------------
-"""
-st.markdown(
-    f"<p style='text-align:center; font-size:18px;'><b>Total Records:</b> {len(df):,}</p>",
-    unsafe_allow_html=True,
-)
-"""
+#st.markdown(
+  #  f"<p style='text-align:center; font-size:18px;'><b>Total Records:</b> {len(df):,}</p>",
+ #   unsafe_allow_html=True,
+#)
 # ---------------- PLOT STYLE FUNCTION ----------------
 def style_fig(fig):
     fig.update_layout(
