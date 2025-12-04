@@ -6,15 +6,24 @@ import os
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Air Aware", layout="wide")
 
-# ---------------- TOP BAR (TITLE + TOGGLE ON RIGHT) ----------------
-title_col, toggle_col = st.columns([6, 2])
 
-with toggle_col:
-    st.markdown(
-        "<div style='text-align:right; font-weight:600; margin-bottom:0.3rem;'>Theme</div>",
-        unsafe_allow_html=True,
-    )
-    dark_mode = st.toggle("Dark mode", value=True)
+# ---------------- THEME TOGGLE (RIGHT CORNER) ----------------
+# Floating toggle box with no label text
+toggle_html = """
+<style>
+.theme-toggle {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    z-index: 9999;
+}
+</style>
+<div class="theme-toggle">
+"""
+
+st.markdown(toggle_html, unsafe_allow_html=True)
+dark_mode = st.toggle("", value=True)  # No label
+
 
 # ---------------- THEME SETTINGS ----------------
 if dark_mode:
@@ -26,7 +35,8 @@ else:
     text_color = "#000000"
     plotly_template = "plotly_white"
 
-# Global page + text color
+
+# Apply theme to text + page background
 st.markdown(
     f"""
     <style>
@@ -34,7 +44,7 @@ st.markdown(
             background-color: {bg_color};
             color: {text_color};
         }}
-        h1, h2, h3, h4, h5, h6, p, label, span, div {{
+        h1, h2, h3, h4, h5, h6, p, span, div {{
             color: {text_color} !important;
         }}
     </style>
@@ -42,16 +52,19 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ---------------- TITLE ----------------
-with title_col:
-    st.markdown(
-        "<h1 style='text-align: center;'>Air Aware</h1>",
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        "<p style='text-align: center; font-size:18px;'>A simple dashboard tracking PM2.5 levels and air quality status.</p>",
-        unsafe_allow_html=True,
-    )
+
+# ---------------- TITLE (CENTERED) ----------------
+st.markdown(
+    f"<h1 style='text-align:center; margin-top:20px;'>Air Aware</h1>",
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    f"<p style='text-align:center; font-size:18px; margin-top:-10px;'>A simple dashboard tracking PM2.5 levels and air quality status.</p>",
+    unsafe_allow_html=True,
+)
+
+
 
 # ---------------- LOAD DATA ----------------
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
@@ -63,7 +76,6 @@ def load_data(path):
     if "Timestamp" in df.columns:
         df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
 
-    # standardize PM2.5 column
     for c in df.columns:
         if "pm2" in c.lower():
             df.rename(columns={c: "PM2.5"}, inplace=True)
@@ -72,18 +84,18 @@ def load_data(path):
     df["PM2.5"] = pd.to_numeric(df["PM2.5"], errors="coerce")
     return df
 
+
 if not os.path.exists(DATA_PATH):
     st.error(f"❌ Missing required file: {DATA_PATH}")
     st.stop()
 
 df = load_data(DATA_PATH)
 
-st.markdown(f"**Total Records:** {len(df):,}")
+# ---------------- RECORD COUNT ----------------
+st.markdown(f"<p style='font-size:18px; text-align:center;'><b>Total Records:</b> {len(df):,}</p>", unsafe_allow_html=True)
 
-# ---------------- CHARTS ----------------
-col1, col2 = st.columns((2, 1))
 
-# Helper to apply axis / legend colors
+# ---------------- CHART STYLING HELPER ----------------
 def style_fig(fig):
     fig.update_layout(
         template=plotly_template,
@@ -92,31 +104,24 @@ def style_fig(fig):
         font=dict(color=text_color),
         legend=dict(font=dict(color=text_color)),
     )
-    fig.update_xaxes(
-        title_font_color=text_color,
-        tickfont_color=text_color,
-    )
-    fig.update_yaxes(
-        title_font_color=text_color,
-        tickfont_color=text_color,
-    )
+    fig.update_xaxes(title_font_color=text_color, tickfont_color=text_color)
+    fig.update_yaxes(title_font_color=text_color, tickfont_color=text_color)
     return fig
 
-# ---- Line Chart ----
+
+# ---------------- CHARTS ----------------
+col1, col2 = st.columns((2, 1))
+
 with col1:
     st.subheader("PM2.5 Trend")
-    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City",
-                   labels={"PM2.5": "PM2.5 (µg/m³)"})
-    fig1 = style_fig(fig1)
-    st.plotly_chart(fig1, use_container_width=True)
+    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City", labels={"PM2.5": "PM2.5 (µg/m³)"})
+    st.plotly_chart(style_fig(fig1), use_container_width=True)
 
-# ---- Histogram ----
 with col2:
     st.subheader("PM2.5 Histogram")
-    fig2 = px.histogram(df, x="PM2.5", nbins=30,
-                        labels={"PM2.5": "PM2.5 (µg/m³)"})
-    fig2 = style_fig(fig2)
-    st.plotly_chart(fig2, use_container_width=True)
+    fig2 = px.histogram(df, x="PM2.5", nbins=30, labels={"PM2.5": "PM2.5 (µg/m³)"})
+    st.plotly_chart(style_fig(fig2), use_container_width=True)
+
 
 # ---------------- PIE CHART ----------------
 def categorize(x):
@@ -132,21 +137,11 @@ df["Category"] = df["PM2.5"].apply(categorize)
 cat_counts = df["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
 
-color_map = {
-    "Good": "#4CAF50",
-    "Moderate": "#FFC107",
-    "Poor": "#F44336",
-}
+color_map = {"Good": "#4CAF50", "Moderate": "#FFC107", "Poor": "#F44336"}
 
 st.subheader("Air Quality Category (PM2.5)")
-fig3 = px.pie(
-    cat_counts,
-    names="Category",
-    values="Count",
-    color="Category",
-    color_discrete_map=color_map,
-    hole=0.25,
-)
-fig3 = style_fig(fig3)
+fig3 = px.pie(cat_counts, names="Category", values="Count", color="Category",
+              color_discrete_map=color_map, hole=0.25)
 fig3.update_traces(textinfo="percent+label")
-st.plotly_chart(fig3, use_container_width=True)
+
+st.plotly_chart(style_fig(fig3), use_container_width=True)
