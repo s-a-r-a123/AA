@@ -45,7 +45,7 @@ with header_right:
                 "margin": "0 2px",
                 "border-radius": "999px",
                 "transition": "0.25s",
-                "background-color": unselected_bg,
+                "background-color": "#66cc99",
                 "color": unselected_text,
                 "border": f"2px solid {unselected_border}",
             },
@@ -122,12 +122,6 @@ ul {{
     unsafe_allow_html=True,
 )
 
-# ---------------- SUBTITLE ----------------
-st.markdown(
-    "<p style='font-size:18px; text-align:center;'>PM2.5 Air Quality Dashboard</p>",
-    unsafe_allow_html=True,
-)
-
 # ---------------- LOAD DATA ----------------
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
 
@@ -152,12 +146,6 @@ if not os.path.exists(DATA_PATH):
     st.stop()
 
 df = load_data(DATA_PATH)
-
-# ---------------- RECORD COUNT ----------------
-st.markdown(
-    f"<p style='text-align:center; font-size:18px;'><b>Total Records:</b> {len(df):,}</p>",
-    unsafe_allow_html=True,
-)
 
 # ---------------- PLOT STYLE FUNCTION ----------------
 def style_fig(fig):
