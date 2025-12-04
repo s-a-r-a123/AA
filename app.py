@@ -19,7 +19,7 @@ with top_col2:
         )
     with toggle_col:
         # Label "Theme" (we'll hide the text via CSS but keep it for aria-label)
-        dark_mode = st.toggle("Theme", value=True, key="theme_toggle")
+        dark_mode = st.toggle(" ", value=True, key="theme_toggle")
     with moon_col:
         st.markdown(
             "<div style='text-align:left; font-size:1.2rem;'>🌙</div>",
