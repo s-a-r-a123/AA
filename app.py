@@ -7,241 +7,189 @@ from streamlit_option_menu import option_menu
 # ---------------- PAGE CONFIG ---------------
 st.set_page_config(page_title="Air Aware", layout="wide")
 
-# ---------------- THEME STATE ----------------
+# ---------------- THEME MEMORY ----------------
 if "theme" not in st.session_state:
-    st.session_state.theme = "Dark"  # default when app first loads
+    st.session_state.theme = "Dark"  # default mode
 
-# For initial render before user changes pill
-is_dark_now = st.session_state.theme == "Dark"
-
-# Colors for unselected pills + header bar based on current theme
-nav_bg = "#111827" if is_dark_now else "#E5E7EB"      # pill background
-nav_text = "#9CA3AF" if is_dark_now else "#4B5563"    # pill text
-bar_bg = "#020617" if is_dark_now else "#F3F4F6"      # top bar background
-bar_text = "#F9FAFB" if is_dark_now else "#0F172A"    # top bar title color
-
-# ---------------- TOP ROW: TITLE LEFT + TOGGLE RIGHT ----------------
+# ---------------- TOP BAR: TITLE + TOGGLE ----------------
 header_left, header_right = st.columns([5, 2])
 
 with header_left:
-    st.markdown(
-        f"<div class='header-title'>Air Aware</div>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("<div class='header-title'>Air Aware</div>", unsafe_allow_html=True)
 
 with header_right:
-    st.markdown(
-        "<div style='display:flex; justify-content:flex-end;'>",
-        unsafe_allow_html=True,
-    )
-
     selected_theme = option_menu(
         menu_title=None,
         options=["Light", "Dark"],
         icons=["sun", "moon"],
         orientation="horizontal",
         default_index=1 if st.session_state.theme == "Dark" else 0,
-        key="theme_option",
+        key="theme_toggle",
         styles={
-            "container": {
-                "padding": "0px",
-                "background-color": "rgba(0,0,0,0)",
-                "border-radius": "999px",
-            },
+            "container": {"padding": "0px", "background": "rgba(0,0,0,0)"},
             "nav-link": {
                 "font-size": "0.9rem",
                 "padding": "6px 22px",
                 "margin": "0 2px",
                 "border-radius": "999px",
-                "color": nav_text,
-                "background-color": nav_bg,
-                "transition": "all 0.2s ease-in-out",
-            },
-            "nav-link-selected": {
-                "background-color": "#6366F1",   # highlighted pill (indigo)
-                "color": "white",
-                "border-radius": "999px",
-                "font-weight": "600",
-            },
-            "icon": {
-                "font-size": "1rem",
+                "transition": "0.25s",
             },
         },
     )
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# Update session theme based on pill selection
+# Update stored theme
 st.session_state.theme = selected_theme
 dark_mode = st.session_state.theme == "Dark"
 
-# ---------------- THEME SETTINGS ----------------
+# ---------------- THEME RULES ----------------
 if dark_mode:
-    bg_color = "#0e1117"
+    bg_color = "#000000"
     text_color = "#FFFFFF"
+    pill_bg = "#000000"
+    pill_border = "#FFFFFF"
+    pill_selected_bg = "#FFFFFF"
+    pill_selected_text = "#000000"
     plotly_template = "plotly_dark"
 else:
     bg_color = "#FFFFFF"
     text_color = "#000000"
+    pill_bg = "#FFFFFF"
+    pill_border = "#000000"
+    pill_selected_bg = "#000000"
+    pill_selected_text = "#FFFFFF"
     plotly_template = "plotly_white"
 
-# ---------------- GLOBAL THEME + FONT + "BAR" CSS ----------------
+# ---------------- GLOBAL UI CSS ----------------
 st.markdown(
     f"""
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
 
-    <style>
-        * {{
-            font-family: 'Poppins', sans-serif !important;
-        }}
+* {{
+    font-family: 'Poppins', sans-serif !important;
+}}
 
-        .stApp {{
-            background-color: {bg_color} !important;
-            color: {text_color} !important;
-        }}
+.stApp {{
+    background-color: {bg_color} !important;
+    color: {text_color} !important;
+}}
 
-        h1, h2, h3, h4, h5, h6, p, span, div, label {{
-            color: {text_color} !important;
-        }}
+h1, h2, h3, h4, h5, h6, p, span, div, label {{
+    color: {text_color} !important;
+}}
 
-        /* Make the FIRST horizontal block (the row with your columns)
-           look like a full-width nav bar with title + toggle inside */
-        div[data-testid="stHorizontalBlock"]:first-of-type {{
-            background-color: {bar_bg};
-            padding: 12px 20px 8px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-            margin-bottom: 24px;
-        }}
+/* NAV BAR AS FIRST ROW */
+div[data-testid="stHorizontalBlock"]:first-of-type {{
+    background-color: {bg_color};
+    padding: 18px 24px;
+    border-radius: 12px;
+    border: 2px solid {text_color};
+    margin-bottom: 28px;
+}}
 
-        .header-title {{
-            font-size: 24px;
-            font-weight: 600;
-            color: {bar_text};
-            margin-top: 2px;
-        }}
+.header-title {{
+    font-size: 26px;
+    font-weight: 600;
+    margin-top: 4px;
+}}
 
-        /* Ensure widget labels & inputs get the same font/color */
-        .stTextInput input,
-        .stSelectbox div,
-        .stMultiSelect div,
-        .stCheckbox label,
-        .stToggle label {{
-            font-family: 'Poppins', sans-serif !important;
-            color: {text_color} !important;
-        }}
-    </style>
-    """,
+/* PILLS */
+ul {{
+    list-style: none;
+    padding-left: 0;
+}}
+
+.nav-link {{
+    background-color: {pill_bg} !important;
+    border: 2px solid {pill_border} !important;
+    color: {text_color} !important;
+    border-radius: 999px !important;
+}}
+
+.nav-link-selected {{
+    background-color: {pill_selected_bg} !important;
+    color: {pill_selected_text} !important;
+    border: 2px solid {pill_selected_text} !important;
+    border-radius: 999px !important;
+    font-weight: 600 !important;
+}}
+
+</style>
+""",
     unsafe_allow_html=True,
 )
 
-# ---------------- SUBTITLE & RECORD COUNT ----------------
+# ---------------- SUBTITLE ----------------
 st.markdown(
-    "<p style='font-size:18px; text-align:center; margin-top:4px;'>"
-    "PM2.5 Air Quality Dashboard"
-    "</p>",
+    "<p style='font-size:18px; text-align:center;'>PM2.5 Air Quality Dashboard</p>",
     unsafe_allow_html=True,
 )
 
+# ---------------- LOAD DATA ----------------
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
 
 @st.cache_data
-def load_data(path: str) -> pd.DataFrame:
+def load_data(path):
     df = pd.read_csv(path)
 
-    # Parse timestamp
     if "Timestamp" in df.columns:
-        df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
+        df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="ignore")
 
-    # Standardize PM2.5 column name
-    for c in df.columns:
-        if "pm2" in c.lower():
-            df.rename(columns={c: "PM2.5"}, inplace=True)
+    # Normalize PM2.5 column naming
+    for col in df.columns:
+        if "pm2" in col.lower():
+            df.rename(columns={col: "PM2.5"}, inplace=True)
             break
 
     df["PM2.5"] = pd.to_numeric(df["PM2.5"], errors="coerce")
     return df
 
 if not os.path.exists(DATA_PATH):
-    st.error(f"❌ Missing required file: {DATA_PATH}")
+    st.error("❌ Missing required dataset: cleaned_air_data.csv")
     st.stop()
 
 df = load_data(DATA_PATH)
 
 # ---------------- RECORD COUNT ----------------
 st.markdown(
-    f"<p style='font-size:18px; text-align:center; margin-bottom:20px;'>"
-    f"<b>Total Records:</b> {len(df):,}</p>",
+    f"<p style='text-align:center; font-size:18px;'><b>Total Records:</b> {len(df):,}</p>",
     unsafe_allow_html=True,
 )
 
-# ---------------- PLOT STYLING HELPER ----------------
+# ---------------- PLOT STYLE FUNCTION ----------------
 def style_fig(fig):
     fig.update_layout(
         template=plotly_template,
         paper_bgcolor=bg_color,
         plot_bgcolor=bg_color,
         font=dict(color=text_color),
-        legend=dict(font=dict(color=text_color)),
     )
-    fig.update_xaxes(title_font_color=text_color, tickfont_color=text_color)
-    fig.update_yaxes(title_font_color=text_color, tickfont_color=text_color)
+    fig.update_xaxes(color=text_color)
+    fig.update_yaxes(color=text_color)
     return fig
 
-# ---------------- CHARTS ----------------
+# ---------------- VISUALS ----------------
 col1, col2 = st.columns((2, 1))
 
 with col1:
     st.subheader("PM2.5 Trend")
-    fig1 = px.line(
-        df,
-        x="Timestamp",
-        y="PM2.5",
-        color="City",
-        labels={"PM2.5": "PM2.5 (µg/m³)"}
-    )
+    fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City", labels={"PM2.5": "PM2.5 (µg/m³)"})
     st.plotly_chart(style_fig(fig1), use_container_width=True)
 
 with col2:
-    st.subheader("PM2.5 Histogram")
-    fig2 = px.histogram(
-        df,
-        x="PM2.5",
-        nbins=30,
-        labels={"PM2.5": "PM2.5 (µg/m³)"},
-        color="City"
-    )
+    st.subheader("PM2.5 Distribution")
+    fig2 = px.histogram(df, x="PM2.5", color="City", nbins=30)
     st.plotly_chart(style_fig(fig2), use_container_width=True)
 
 # ---------------- PIE CHART ----------------
-def categorize(pm):
-    if pd.isna(pm):
-        return None
-    if pm <= 30:
-        return "Good"
-    elif pm <= 60:
-        return "Moderate"
-    return "Poor"
+def categorize(x):
+    if pd.isna(x): return None
+    return "Good" if x <= 30 else "Moderate" if x <= 60 else "Poor"
 
 df["Category"] = df["PM2.5"].apply(categorize)
-cat_counts = (
-    df["Category"]
-    .dropna()
-    .value_counts()
-    .reset_index()
-)
+cat_counts = df["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
 
-color_map = {"Good": "#4CAF50", "Moderate": "#FFC107", "Poor": "#F44336"}
-
-st.subheader("Air Quality Categories")
-fig3 = px.pie(
-    cat_counts,
-    names="Category",
-    values="Count",
-    color="Category",
-    color_discrete_map=color_map,
-    hole=0.25,
-)
+st.subheader("Air Quality Classification")
+fig3 = px.pie(cat_counts, names="Category", values="Count", hole=0.25)
 fig3.update_traces(textinfo="percent+label")
 st.plotly_chart(style_fig(fig3), use_container_width=True)
