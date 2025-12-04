@@ -94,7 +94,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {{
 
 /* Top extended bar: DARK PINK, only this block */
 div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background-color: #FF0000 !important;  /* dark pink bar */
+    background-color: #FF3C3C !important;  /* dark pink bar */
     padding: 18px 24px;
     border-radius: 12px;
     border: 2px solid {text_color};
