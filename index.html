@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Air Aware</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body style="margin:0; padding:0;">
+    <div id="root"></div>
+
+    <script type="module">
+      import { mount } from "https://cdn.jsdelivr.net/npm/stlite@0.63.0/build/stlite.js";
+
+      const appPy = await fetch("app.py").then(r => r.text());
+      const csvData = await fetch("data/cleaned_air_data.csv").then(r => r.text());
+      const requirements = await fetch("requirements.txt").then(r => r.text());
+
+      mount({
+        target: document.getElementById("root"),
+        entrypoint: "app.py",
+        files: {
+          "app.py": appPy,
+          "requirements.txt": requirements,
+          "data/cleaned_air_data.csv": csvData
+        }
+      });
+    </script>
+  </body>
+</html>
