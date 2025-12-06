@@ -1,5 +1,5 @@
 {
-  "name": "air-aware",
+  "name": "airaware",
   "main": "worker.js",
   "compatibility_date": "2025-12-06",
   "assets": {
