@@ -1,8 +1,6 @@
 export default {
   async fetch(request, env, ctx) {
-    return new Response(
-      "Air Aware Static Worker Running — app served from index.html.",
-      { headers: { "Content-Type": "text/plain" } }
-    );
+    // Let Cloudflare's asset handler serve index.html, app.py, data, etc.
+    return env.ASSETS.fetch(request);
   },
 };
