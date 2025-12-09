@@ -13,33 +13,42 @@ st.markdown("""
 
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-/* Apply Font */
+/* Apply global font */
 * {
     font-family: "Rubik Mono One", sans-serif !important;
     letter-spacing: 0.5px;
 }
 
-/* Title — reduce size */
+/* ---------------- EXTENDED TOP BAR (PINK) ---------------- */
+div[data-testid="stHorizontalBlock"]:first-of-type {
+    background-color: #ff99ff !important;
+    padding: 16px 22px;
+    border-radius: 12px;
+    border: 2.5px solid black;
+    margin-bottom: 28px;
+}
+
+/* Title inside header */
 .header-title {
     font-size: 22px !important;
 }
 
-/* Subheaders */
+/* Headings sizes */
 h1 { font-size: 26px !important; }
 h2 { font-size: 20px !important; }
 h3 { font-size: 18px !important; }
 
-/* Body text size */
+/* Body text */
 p, span, div, label {
     font-size: 12px !important;
 }
 
-/* Plotly Axis + Tooltip */
+/* Plotly text + axis labels */
 .plotly .main-svg text {
     font-size: 11px !important;
 }
 
-/* Buttons + Toggle */
+/* Buttons + toggle text */
 .stButton > button,
 .stSelectbox div,
 .stTextInput input,
