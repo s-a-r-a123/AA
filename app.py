@@ -8,58 +8,64 @@ from streamlit_option_menu import option_menu
 st.set_page_config(page_title="Air Aware", layout="wide")
 
 # ---------------- GLOBAL FONT (Rubik Mono One) ----------------
-st.markdown("""
+st.markdown(f"""
 <style>
 
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
-/* Apply global font */
-* {
+* {{
     font-family: "Rubik Mono One", sans-serif !important;
-    letter-spacing: 0.5px;
-}
+}}
 
-/* ---------------- EXTENDED TOP BAR (PINK) ---------------- */
-div[data-testid="stHorizontalBlock"]:first-of-type {
-    background-color: #ff99ff !important;
+/* ---------------- THEME SWITCHED COLORS ---------------- */
+
+:root {{
+    --bg: {"#0D1117" if dark_mode else "#FFFFFF"};
+    --text: {"#FFFFFF" if dark_mode else "#000000"};
+    --bar: {"#FF99FF" if dark_mode else "#FFC9FF"};
+    --border: {"#FFFFFF" if dark_mode else "#000000"};
+}}
+
+.stApp {{
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+}}
+
+/* ---------------- EXTENDED HEADER BAR ---------------- */
+
+div[data-testid="stHorizontalBlock"]:first-of-type {{
+    background-color: var(--bar) !important;
     padding: 16px 22px;
-    border-radius: 12px;
-    border: 2.5px solid black;
+    border-radius: 14px;
+    border: 3px solid var(--border);
     margin-bottom: 28px;
-}
+}}
 
-/* Title inside header */
-.header-title {
+.header-title {{
     font-size: 22px !important;
-}
+    color: var(--text) !important;
+}}
 
-/* Headings sizes */
-h1 { font-size: 26px !important; }
-h2 { font-size: 20px !important; }
-h3 { font-size: 18px !important; }
+/* ---------------- GENERAL FONT SIZES ---------------- */
 
-/* Body text */
-p, span, div, label {
+h1, h2, h3 {{
+    color: var(--text) !important;
+}}
+
+p, label, span, div {{
+    color: var(--text) !important;
     font-size: 12px !important;
-}
+}}
 
-/* Plotly text + axis labels */
-.plotly .main-svg text {
-    font-size: 11px !important;
-}
+/* ---------------- PLOTLY CHART TEXT FIX ---------------- */
 
-/* Buttons + toggle text */
-.stButton > button,
-.stSelectbox div,
-.stTextInput input,
-.stCheckbox label {
+.plotly .main-svg text {{
+    fill: var(--text) !important;
     font-size: 12px !important;
-}
+}}
 
 </style>
 """, unsafe_allow_html=True)
-
-# ---------------- THEME MEMORY ----------------
 if "theme" not in st.session_state:
     st.session_state.theme = "Dark"
 
