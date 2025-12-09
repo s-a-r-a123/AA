@@ -4,35 +4,50 @@ import plotly.express as px
 import os
 from streamlit_option_menu import option_menu
 
-# ---------------- PAGE CONFIG ---------------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Air Aware", layout="wide")
+
+# ---------------- GLOBAL FONT (Rubik Mono One) ----------------
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
+
+/* Apply Font */
+* {
+    font-family: "Rubik Mono One", sans-serif !important;
+    letter-spacing: 1px;
+}
+
+/* Header Bar */
+div[data-testid="stHorizontalBlock"]:first-of-type {
+    background-color: #ff99ff !important;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    border: 3px solid black;
+}
+
+.header-title {
+    font-size: 32px;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------- THEME MEMORY ----------------
 if "theme" not in st.session_state:
-    st.session_state.theme = "Dark"  # default mode
+    st.session_state.theme = "Dark"
 
-# Theme value BEFORE user clicks toggle (from previous run)
-is_dark_now = st.session_state.theme == "Dark"
-
-# ---------------- TOP BAR: TITLE + TOGGLE ----------------
+# Toggle placement
 header_left, header_right = st.columns([5, 2])
 
 with header_left:
-    st.markdown("<div class='header-title'>Air Aware</div>", unsafe_allow_html=True)
+    st.markdown("<div class='header-title'>AIR AWARE</div>", unsafe_allow_html=True)
 
 with header_right:
-    # Neutral pill colors that invert with theme
-    unselected_bg = "#000000" if is_dark_now else "#FFFFFF"
-    unselected_border = "#FFFFFF" if is_dark_now else "#000000"
-    unselected_text = "#FFFFFF" if is_dark_now else "#000000"
-
-    selected_bg = "#FFFFFF" if is_dark_now else "#000000"
-    selected_text = "#000000" if is_dark_now else "#FFFFFF"
-    selected_border = selected_text
-
     selected_theme = option_menu(
-        menu_title=None,
-        options=["Light", "Dark"],
+        None,
+        ["Light", "Dark"],
         icons=["sun", "moon"],
         orientation="horizontal",
         default_index=1 if st.session_state.theme == "Dark" else 0,
@@ -40,93 +55,29 @@ with header_right:
         styles={
             "container": {"padding": "0px", "background": "transparent"},
             "nav-link": {
-                "font-size": "0.9rem",
                 "padding": "6px 22px",
-                "margin": "0 2px",
+                "margin": "2px",
                 "border-radius": "999px",
-                "transition": "0.25s",
-                "background-color": unselected_bg,
-                "color": unselected_text,
-                "border": f"2px solid {unselected_border}",
+                "border": "3px solid black",
+                "color": "black",
+                "background": "#FFFFFF",
             },
             "nav-link-selected": {
-                "background-color": selected_bg,
-                "color": selected_text,
+                "background": "black",
+                "color": "white",
                 "border-radius": "999px",
-                "font-weight": "600",
-                "border": f"2px solid {selected_border}",
+                "border": "3px solid white",
             },
-            "icon": {"font-size": "1rem"},
         },
     )
 
-# Update stored theme AFTER click
 st.session_state.theme = selected_theme
 dark_mode = st.session_state.theme == "Dark"
 
-# ---------------- THEME RULES ----------------
-if dark_mode:
-    bg_color = "#000000"          # page background
-    text_color = "#FFFFFF"        # text
-    plotly_template = "plotly_dark"
-else:
-    bg_color = "#FFFFFF"
-    text_color = "#000000"
-    plotly_template = "plotly_white"
+bg_color = "#000000" if dark_mode else "#FFFFFF"
+text_color = "#FFFFFF" if dark_mode else "#000000"
+plotly_template = "plotly_dark" if dark_mode else "plotly_white"
 
-# ---------------- GLOBAL UI CSS ----------------
-st.markdown(
-    f"""
-<style>
-
-* {{
-    font-family: 'Poppins', sans-serif !important;
-}}
-
-.stApp {{
-    background-color: {bg_color} !important;
-    color: {text_color} !important;
-}}
-
-h1, h2, h3, h4, h5, h6, p, span, div, label {{
-    color: {text_color} !important;
-}}
-
-/* Top extended bar: DARK PINK, only this block */
-div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background-color: #d10075 !important;  /* dark pink bar */
-    padding: 18px 24px;
-    border-radius: 12px;
-    border: 2px solid {text_color};
-    margin-bottom: 28px;
-}}
-
-.header-title {{
-    font-size: 26px;
-    font-weight: 600;
-    margin-top: 4px;
-}}
-
-/* Let option_menu inline styles control pill colors; we only shape them */
-ul {{
-    list-style: none;
-    padding-left: 0;
-}}
-
-.nav-link, .nav-link-selected {{
-    border-radius: 999px !important;
-}}
-
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
-# ---------------- SUBTITLE ----------------
-st.markdown(
-    "<p style='font-size:18px; text-align:center;'>PM2.5 Air Quality Dashboard</p>",
-    unsafe_allow_html=True,
-)
 
 # ---------------- LOAD DATA ----------------
 DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
@@ -134,88 +85,73 @@ DATA_PATH = os.path.join("data", "cleaned_air_data.csv")
 @st.cache_data
 def load_data(path):
     df = pd.read_csv(path)
-
     if "Timestamp" in df.columns:
         df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="ignore")
 
-    # Normalize PM2.5 column naming
     for col in df.columns:
         if "pm2" in col.lower():
             df.rename(columns={col: "PM2.5"}, inplace=True)
-            break
 
     df["PM2.5"] = pd.to_numeric(df["PM2.5"], errors="coerce")
     return df
 
 if not os.path.exists(DATA_PATH):
-    st.error("❌ Missing required dataset: cleaned_air_data.csv")
+    st.error("❌ Missing dataset: cleaned_air_data.csv")
     st.stop()
 
 df = load_data(DATA_PATH)
 
-# ---------------- RECORD COUNT ----------------
-st.markdown(
-    f"<p style='text-align:center; font-size:18px;'><b>Total Records:</b> {len(df):,}</p>",
-    unsafe_allow_html=True,
-)
-
-# ---------------- PLOT STYLE FUNCTION ----------------
+# ---------------- STYLE FIG ----------------
 def style_fig(fig):
     fig.update_layout(
         template=plotly_template,
         paper_bgcolor=bg_color,
         plot_bgcolor=bg_color,
-        font=dict(color=text_color),
+        font=dict(color=text_color)
     )
-    # axis "range text" color follows theme
-    fig.update_xaxes(color=text_color, title_font_color=text_color, tickfont_color=text_color)
-    fig.update_yaxes(color=text_color, title_font_color=text_color, tickfont_color=text_color)
+    fig.update_xaxes(color=text_color)
+    fig.update_yaxes(color=text_color)
     return fig
 
-# ---------------- VISUALS (FULL WIDTH, ORDERED) ----------------
 
-# 1) PM2.5 Trend (enlarged, first)
-st.subheader("PM2.5 Trend")
-fig1 = px.line(
-    df,
-    x="Timestamp",
-    y="PM2.5",
-    color="City",
-    labels={"PM2.5": "PM2.5 (µg/m³)"}
+# ---------------- RECORD COUNT ----------------
+st.markdown(
+    f"<p style='text-align:center; font-size:20px;'>Total Records: <b>{len(df):,}</b></p>",
+    unsafe_allow_html=True,
 )
+
+
+# ---------------- GRAPH 1: PM2.5 TREND ----------------
+st.subheader("PM2.5 Trend")
+fig1 = px.line(df, x="Timestamp", y="PM2.5", color="City")
 st.plotly_chart(style_fig(fig1), use_container_width=True)
 
-# 2) PM2.5 Distribution (second)
+
+# ---------------- GRAPH 2: HISTOGRAM ----------------
 st.subheader("PM2.5 Distribution")
-fig2 = px.histogram(
-    df,
-    x="PM2.5",
-    color="City",
-    nbins=30,
-    labels={"PM2.5": "PM2.5 (µg/m³)"}
-)
+fig2 = px.histogram(df, x="PM2.5", nbins=30, color="City")
 st.plotly_chart(style_fig(fig2), use_container_width=True)
 
-# 3) Air Quality Classification (third)
+
+# ---------------- GRAPH 3: PIE CHART ----------------
 def categorize(x):
-    if pd.isna(x):
-        return None
-    if x <= 30:
-        return "Good"
-    elif x <= 60:
-        return "Moderate"
-    return "Poor"
+    if pd.isna(x): return None
+    return "Good" if x <= 30 else "Moderate" if x <= 60 else "Poor"
 
 df["Category"] = df["PM2.5"].apply(categorize)
 cat_counts = df["Category"].value_counts().reset_index()
 cat_counts.columns = ["Category", "Count"]
 
+# Pastel animated pie
 st.subheader("Air Quality Classification")
 fig3 = px.pie(
     cat_counts,
     names="Category",
     values="Count",
-    hole=0.25
+    hole=0.25,
+    color_discrete_sequence=["#A3E4D7", "#FAD7A0", "#F5B7B1"]
 )
-fig3.update_traces(textinfo="percent+label")
+fig3.update_traces(textinfo="percent+label", pull=[0.04]*3)
+fig3.update_layout(transition=dict(duration=600, easing="cubic-in-out"))
+
 st.plotly_chart(style_fig(fig3), use_container_width=True)
