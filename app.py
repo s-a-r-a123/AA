@@ -10,25 +10,41 @@ st.set_page_config(page_title="Air Aware", layout="wide")
 # ---------------- GLOBAL FONT (Rubik Mono One) ----------------
 st.markdown("""
 <style>
+
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap');
 
 /* Apply Font */
 * {
     font-family: "Rubik Mono One", sans-serif !important;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
-/* Header Bar */
-div[data-testid="stHorizontalBlock"]:first-of-type {
-    background-color: #ff99ff !important;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    border: 3px solid black;
-}
-
+/* Title — reduce size */
 .header-title {
-    font-size: 32px;
+    font-size: 22px !important;
+}
+
+/* Subheaders */
+h1 { font-size: 26px !important; }
+h2 { font-size: 20px !important; }
+h3 { font-size: 18px !important; }
+
+/* Body text size */
+p, span, div, label {
+    font-size: 12px !important;
+}
+
+/* Plotly Axis + Tooltip */
+.plotly .main-svg text {
+    font-size: 11px !important;
+}
+
+/* Buttons + Toggle */
+.stButton > button,
+.stSelectbox div,
+.stTextInput input,
+.stCheckbox label {
+    font-size: 12px !important;
 }
 
 </style>
